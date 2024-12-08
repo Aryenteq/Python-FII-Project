@@ -5,6 +5,9 @@ import threading
 import time
 import os
 import sys
+import shutil
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 class ChangeHandler(FileSystemEventHandler):
     """Restart the server on file changes."""
@@ -16,16 +19,54 @@ class ChangeHandler(FileSystemEventHandler):
     def on_any_event(self, event):
         if event.is_directory:
             return
-        
-        # Ignore changes in `__pycache__`
+
         if "__pycache__" in event.src_path or event.src_path.endswith(".pyc"):
             return
+
         if event.event_type in ("modified", "created", "deleted"):
             current_time = time.time()
             if current_time - self._last_event_time > self._debounce_time:
                 self._last_event_time = current_time
                 print(f"Change detected in: {event.src_path}")
                 self.restart_callback()
+
+
+def clear_and_reload_modules(base_path, prefix="server"):
+    global app  # Explicitly clear global app reference
+    app = None
+
+    base_path = os.path.abspath(base_path)
+
+    # Invalidate caching
+    for root, dirs, files in os.walk(base_path):
+        for dir_name in dirs:
+            if dir_name == "__pycache__":
+                pycache_path = os.path.join(root, dir_name)
+                # print(f"Deleting __pycache__: {pycache_path}")
+                shutil.rmtree(pycache_path, ignore_errors=True)
+
+    modules_to_clear = [
+        module_name
+        for module_name, module in sys.modules.items()
+        if getattr(module, "__file__", None)
+        and module.__file__.startswith(base_path)
+        and (module_name.startswith(prefix) or module_name == "app")
+    ]
+
+    # print(f"Modules to clear: {modules_to_clear}")
+
+    for module_name in modules_to_clear:
+        del sys.modules[module_name]
+
+    # Reload all modules
+    for module_name in sorted(modules_to_clear):
+        try:
+            # print(f"Reloading module: {module_name}")
+            module = import_module(module_name)
+            reload(module)
+        except Exception as e:
+            print(f"Error reloading module {module_name}: {e}")
+
 
 class ServerManager:
     def __init__(self):
@@ -40,22 +81,12 @@ class ServerManager:
         def run():
             global app
             try:
-                # Forcefully clear cache and reload modules!
-                modules_to_clear = [
-                    "app",
-                    "src.routes.cmdRoutes",
-                    "src.controllers.cmdController",
-                    "src.services.cmdService",
-                ]
-                for module_name in modules_to_clear:
-                    if module_name in sys.modules:
-                        del sys.modules[module_name]
+                base_path = os.path.abspath(os.path.dirname(__file__))
 
-                # re-import the modules manually
+                clear_and_reload_modules(base_path)
+
                 app = import_module("app")
-                cmdRoutes = import_module("src.routes.cmdRoutes")
-                cmdController = import_module("src.controllers.cmdController")
-                cmdService = import_module("src.services.cmdService")
+                reload(app)
 
                 print("Starting server on http://127.0.0.1:8000")
                 self.httpd = app.HTTPServer(("127.0.0.1", 8000), app.Server)
@@ -74,19 +105,19 @@ class ServerManager:
             self.httpd.server_close()
             self.httpd = None
 
+
 def main():
     manager = ServerManager()
 
     def restart():
         print("Restarting server...")
         manager.stop_server()
-        time.sleep(0.5)  # Give a short pause to avoid conflicts
+        time.sleep(0.5)
         manager.start_server()
 
-    # Start the server initially
     restart()
 
-    # HMR
+    # File watcher for HMR
     observer = Observer()
     handler = ChangeHandler(restart_callback=restart)
     observer.schedule(handler, path=".", recursive=True)
