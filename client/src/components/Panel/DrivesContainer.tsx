@@ -29,15 +29,15 @@ const DrivesContainer: React.FC<DrivesContainerProps> = ({ data, path, setPath, 
     };
 
     const handleDoubleClick = (item: Drive) => {
-        const normalizedPath = item.name.replace(/\\/g, '/'); // Replace all backslashes with forward slashes
+        const normalizedPath = item.name.replace(/\\/g, '/'); // Replace all \ with /
         setPrevPath(null);
         setPath(normalizedPath);
     };
 
     return (
-        <div className="flex flex-col overflow-hidden">
+        <div className="flex flex-col min-h-0">
             <h2 className="text-lg font-bold p-2">Available Drives ({data.length})</h2>
-            <div className="p-2 flex-grow overflow-auto">
+            <div className="p-2 flex-grow overflow-auto custom-scrollbar">
                 {data.map((drive, index) => (
                     <div
                         key={index}

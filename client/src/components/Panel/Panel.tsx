@@ -40,7 +40,7 @@ const Panel: React.FC<PathProps> = ({path, setPath, selectedItems}) => {
     const isDriveData = treeData[0]?.type === 'drive';
 
     return (
-        <div className="flex flex-col flex-grow overflow-auto px-5">
+        <div className="flex flex-col flex-grow px-5 min-h-0">
             {/* Header with Path and Action Buttons */}
             <header className="flex justify-between items-center w-full p-4 rounded-md shadow-sm gap-2">
                 <Path path={path} onPathChange={handlePathChange} />

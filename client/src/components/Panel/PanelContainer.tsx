@@ -166,10 +166,10 @@ const PanelContainer: React.FC = () => {
     }, [isSelecting, dragStart, dragEnd]);
 
     return (
-        <main className="flex flex-grow h-full overflow-hidden">
+        <main className="flex flex-grow min-h-0 overflow-hidden">
             {/* Left Panel */}
             <div
-                className="relative h-full"
+                className="relative flex flex-grow min-h-0"
                 style={{ width: `${leftPanelWidth}%` }}
                 onMouseDown={(e) => handleMouseDown(e, "left")}
                 ref={leftPanelRef}
@@ -193,7 +193,7 @@ const PanelContainer: React.FC = () => {
 
             {/* Right Panel */}
             <div
-                className="relative h-full flex-grow"
+                className="relative flex flex-grow min-h-0"
                 style={{ width: `${100 - leftPanelWidth}%` }}
                 onMouseDown={(e) => handleMouseDown(e, "right")}
                 ref={rightPanelRef}

@@ -5,7 +5,7 @@ import { fetchTreeData } from "../../fetch/treeFetch";
 export const useTreeData = (path: string | null) => {
     const { setInfo } = useInfo();
 
-    const { data: treeData, isLoading, error, refetch } = useQuery(
+    const { data: treeData = [], isLoading, error, refetch } = useQuery(
         ['treeData', path],
         () => fetchTreeData(path),
         {

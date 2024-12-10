@@ -4,4 +4,4 @@ def handle_get(path, query_params=None):
     """Routes the request to the appropriate controller."""
     
     if path == "/tree":
-        return 200, handle_get_tree(query_params or {})
+        return handle_get_tree(query_params or {})

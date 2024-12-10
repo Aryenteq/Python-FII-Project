@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import ColoredFileIcon from '../../utils/ColoredFileIcon';
 
 interface FileOrDirectory {
     name: string;
-    type: string;
+    extension: string;
+    date_created: string;
+    size: number;
+    hidden: boolean;
 }
 
 interface FilesContainerProps {
@@ -13,14 +17,20 @@ interface FilesContainerProps {
     selectedItems: string[];
 }
 
-const FilesContainer: React.FC<FilesContainerProps> = ({ data, path, setPath, setPrevPath, selectedItems }) => {
+const FilesContainer: React.FC<FilesContainerProps> = ({
+    data,
+    path,
+    setPath,
+    setPrevPath,
+    selectedItems,
+}) => {
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
+    const [sortField, setSortField] = useState<keyof FileOrDirectory>('name');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-    // Separate directories and files
-    const directories = data.filter((item) => item.type === 'directory');
-    const files = data.filter((item) => item.type === 'file');
+    const directories = data.filter((item) => item.extension === 'File Folder');
+    const files = data.filter((item) => item.extension !== 'File Folder');
 
-    // Go up one directory
     const goUpDirectory = () => {
         if (!path) return;
         let newPath = path.substring(0, path.lastIndexOf('/')) || null;
@@ -33,20 +43,10 @@ const FilesContainer: React.FC<FilesContainerProps> = ({ data, path, setPath, se
         setPath(newPath);
     };
 
-    const handleSingleClick = (name: string) => {
-        setSelectedItem(name);
-    };
+    const validPath = Array.isArray(data) && data.length > 0;
 
-    const handleDoubleClick = (item: FileOrDirectory) => {
-        if (item.type === 'directory') {
-            setPrevPath(path);
-            setPath(path ? `${path}/${item.name}` : item.name); // Navigate to directory
-        }
-        // files if needed
-    };
-
-    return (
-        <div className="flex flex-col overflow-hidden">
+    if (!validPath) {
+        return <div className="flex flex-col min-h-0">
             {/* Go Up Button */}
             <div className="flex items-center justify-between p-2">
                 <button
@@ -56,54 +56,111 @@ const FilesContainer: React.FC<FilesContainerProps> = ({ data, path, setPath, se
                 >
                     ⬆ Go Up
                 </button>
-                <span className="text-sm text-gray-500">
-                    {path || 'This PC'}
-                </span>
+                <span className="text-sm text-gray-500">{path || 'This PC'}</span>
             </div>
-    
-            {/* Conditional Rendering for Data */}
-            {!data || data.length === 0 ? (
-                <div className="flex-grow min-h-full flex items-center justify-center">
-                    No data available
-                </div>
-            ) : (
-                <div className="p-2 flex-grow overflow-auto">
-                    {/* Directories Section */}
-                    <h3 className="text-md font-bold">Directories</h3>
-                    <ul>
-                        {directories.map((dir, index) => (
-                            <li
-                                key={index}
-                                className={`selectable-item p-1 border-b border-gray-200 cursor-pointer hover:bg-white-15 ${
-                                    selectedItem === dir.name ? 'bg-white-10' : ''
-                                }`}
-                                onClick={() => handleSingleClick(dir.name)} // Single-click to select
-                                onDoubleClick={() => handleDoubleClick(dir)} // Double-click to navigate
-                            >
-                                📁 {dir.name}
-                            </li>
-                        ))}
-                    </ul>
-    
-                    {/* Files Section */}
-                    <h3 className="text-md font-bold mt-4">Files</h3>
-                    <ul>
-                        {files.map((file, index) => (
-                            <li
-                                key={index}
-                                className={`selectable-item p-1 border-b border-gray-200 cursor-pointer hover:bg-gray-100 ${
-                                    selectedItem === file.name ? 'bg-gray-200' : ''
-                                }`}
-                                onClick={() => handleSingleClick(file.name)} // Single-click to select
-                            >
-                                📄 {file.name}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+            <div>Empty folder</div>
         </div>
-    );    
+    }
+
+    // Sorting
+    const sortItems = (items: FileOrDirectory[]) =>
+        [...items].sort((a, b) => {
+            if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;
+            if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+    const sortedDirectories = sortItems(directories);
+    const sortedFiles = sortItems(files);
+
+    const sortedData =
+        sortOrder === 'asc'
+            ? [...sortedDirectories, ...sortedFiles] // Folders first
+            : [...sortedFiles, ...sortedDirectories]; // Folders last
+
+
+
+    const handleSingleClick = (name: string) => {
+        setSelectedItem(name);
+    };
+
+    const handleDoubleClick = (item: FileOrDirectory) => {
+        if (item.extension === 'File Folder') {
+            setPrevPath(path);
+            setPath(path ? `${path}/${item.name}` : item.name);
+        }
+    };
+
+    const toggleSort = (field: keyof FileOrDirectory) => {
+        if (sortField === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortOrder('asc');
+        }
+    };
+
+    return (
+        <div className="flex flex-col min-h-0">
+            {/* Go Up Button */}
+            <div className="flex items-center justify-between p-2">
+                <button
+                    onClick={goUpDirectory}
+                    className="text-sm font-bold text-blue-500 hover:underline"
+                    disabled={!path}
+                >
+                    ⬆ Go Up
+                </button>
+                <span className="text-sm text-gray-500">{path || 'This PC'}</span>
+            </div>
+
+            {/* Table Header */}
+            <div className="grid grid-cols-4 gap-2 p-2 bg-blue-900 text-white text-sm font-bold">
+                <button onClick={() => toggleSort('name')} className="text-left">
+                    Name {sortField === 'name' && (sortOrder === 'asc' ? '▲' : '▼')}
+                </button>
+                <button onClick={() => toggleSort('date_created')} className="text-left">
+                    Date modified {sortField === 'date_created' && (sortOrder === 'asc' ? '▲' : '▼')}
+                </button>
+                <button onClick={() => toggleSort('extension')} className="text-left">
+                    Type {sortField === 'extension' && (sortOrder === 'asc' ? '▲' : '▼')}
+                </button>
+                <button onClick={() => toggleSort('size')} className="text-right">
+                    Size {sortField === 'size' && (sortOrder === 'asc' ? '▲' : '▼')}
+                </button>
+            </div>
+
+            {/* Table Rows */}
+            <div className="flex-grow overflow-auto custom-scrollbar">
+                {sortedData.map((item, index) => (
+                    <div
+                        key={index}
+                        className={`grid grid-cols-4 gap-2 p-2 border-b border-gray-200 cursor-pointer hover:bg-gray-700 ${selectedItem === item.name ? 'bg-gray-600' : ''
+                            }`}
+                        onClick={() => handleSingleClick(item.name)} // Single-click to select
+                        onDoubleClick={() => handleDoubleClick(item)} // Double-click to navigate
+                    >
+                        <span className={`flex items-center text-left ${item.hidden ? "opacity-50" : ""}`}>
+                            <div
+                                className="flex justify-center items-center"
+                                style={{
+                                    width: "15px",
+                                    height: "15px",
+                                }}
+                            >
+                                <ColoredFileIcon extension={item.extension} />
+                            </div>
+                            <span className="ml-2">{item.name}</span>
+                        </span>
+                        <span className="text-left">{item.date_created}</span>
+                        <span className="text-left">{item.extension}</span>
+                        <span className="text-right">{item.size > 0 ? `${item.size} KB` : ''}</span>
+
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 };
 
 export default FilesContainer;
