@@ -53,18 +53,18 @@ const Panel: React.FC<PathProps> = ({path, setPath, otherPath, selectedItems, se
                     <div className="flex space-x-3">
                         <button
                             className="w-12 h-12 hover:bg-white-10 rounded p-1 transition"
-                            onClick={() => console.log('Delete')}
+                            datatype='delete' title="Delete"
                         >
                             <img src={deleteIcon} alt="Delete" />
                         </button>
                         <button
-                            className="w-12 h-12 hover:bg-white-10 rounded p-1 transition"
+                            className="w-12 h-12 hover:bg-white-10 rounded p-1 transition" title="New Folder"
                             onClick={() => console.log('Create New Folder')}
                         >
                             <img src={newFolderIcon} alt="New Folder" />
                         </button>
                         <button
-                            className="w-12 h-12 hover:bg-white-10 rounded p-1 transition"
+                            className="w-12 h-12 hover:bg-white-10 rounded p-1 transition" title="New File"
                             onClick={() => console.log('Create New File')}
                         >
                             <img src={newFileIcon} alt="New File" />

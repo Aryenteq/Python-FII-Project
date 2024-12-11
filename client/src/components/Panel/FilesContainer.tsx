@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import ColoredFileIcon from '../../utils/ColoredFileIcon';
+import ColoredFileIcon from './ColoredFileIcon';
+import { useDragAndDrop } from '../../hooks/DragAndDropState';
 
 interface FileOrDirectory {
     name: string;
@@ -110,125 +111,24 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     };
 
 
-    const [isDragging, setIsDragging] = useState<boolean>(false);
+    const { isDragging, setDragging, initializeDragAndDrop } = useDragAndDrop({
+        otherPath,
+        currentPanelRef,
+        selectedItems,
+    });
 
-    const handleMouseDown = (e: React.MouseEvent, index: number, item: FileOrDirectory) => {
-        const fullName = getFullName(item);
-
+    const handleMouseDown = (item: FileOrDirectory) => {
+        const fullName = `${path}/${item.name}`;
         currentPanelRef.current = panelRef.current;
 
-        // Ensure single-click works by adding a 200ms cooldown
         const timeout = setTimeout(() => {
-            setIsDragging(true);
+            setDragging(true);
             if (!selectedItems.includes(fullName)) {
                 setSelectedItems([fullName]);
             }
+            initializeDragAndDrop();
+        }, 200);
 
-            // Create a temporary effect near the cursor
-            const cursorEffect = document.createElement("div");
-            cursorEffect.style.position = "absolute";
-            cursorEffect.style.width = "50px";
-            cursorEffect.style.height = "50px";
-            cursorEffect.style.backgroundColor = "rgba(255, 255, 255, 0.6)";
-            cursorEffect.style.borderRadius = "4px";
-            cursorEffect.style.pointerEvents = "none";
-            cursorEffect.style.zIndex = "1000";
-            document.body.appendChild(cursorEffect);
-
-            const cursorText = document.createElement("div");
-            cursorText.style.position = "absolute";
-            cursorText.style.color = "black";
-            cursorText.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
-            cursorText.style.borderRadius = "4px";
-            cursorText.style.padding = "5px";
-            cursorText.style.fontSize = "12px";
-            cursorText.style.pointerEvents = "none";
-            cursorText.style.zIndex = "1001";
-            cursorText.style.display = 'none';
-            document.body.appendChild(cursorText);
-
-            const handleMouseMove = (moveEvent: MouseEvent) => {
-                cursorEffect.style.left = `${moveEvent.clientX + 5}px`;
-                cursorEffect.style.top = `${moveEvent.clientY + 5}px`;
-
-                cursorText.style.left = `${moveEvent.clientX + 10}px`;
-                cursorText.style.top = `${moveEvent.clientY + 20}px`;
-
-                const targetElement = document.elementFromPoint(
-                    moveEvent.clientX,
-                    moveEvent.clientY
-                );
-
-                const panelElement = targetElement?.closest('[data-type="panel"]');
-
-                if ((panelElement && currentPanelRef.current &&
-                    currentPanelRef.current.contains(panelElement)) || // same panel
-                    !panelElement) { // not inside a panel
-                    document.head.appendChild(globalCursorStyle);
-                } else {
-                    globalCursorStyle.remove();
-                }
-
-                if (panelElement && currentPanelRef.current && !currentPanelRef.current.contains(panelElement)) {
-                    const folderElement = targetElement?.closest('.selectable-item');
-                
-                    cursorText.style.display = 'block';
-                
-                    if (folderElement) {
-                        // Folder type
-                        const folderType = folderElement.querySelectorAll('span')[4]?.textContent;
-                        if (folderType === 'File Folder') {
-                            const folderName = folderElement.querySelectorAll('.flex span')[2]?.textContent || "Unknown Folder";
-                            cursorText.innerText = `Copy to ${otherPath}/${folderName}`;
-                        } else {
-                            cursorText.innerText = `Copy to ${otherPath}`;
-                        }
-                    } else {
-                        // No folder element found; default text
-                        cursorText.innerText = `Copy to ${otherPath}`;
-                    }
-                } else {
-                    // Not over another panel
-                    cursorText.style.display = 'none';
-                }
-            };
-
-            const handleMouseUp = (mouseupEvent: MouseEvent) => {
-                setIsDragging(false);
-                clearTimeout(timeout);
-                globalCursorStyle.remove();
-                cursorEffect.remove();
-                cursorText.remove();
-                document.removeEventListener("mousemove", handleMouseMove);
-                document.removeEventListener("mouseup", handleMouseUp);
-
-                const targetElement = document.elementFromPoint(
-                    mouseupEvent.clientX,
-                    mouseupEvent.clientY
-                );
-
-                const panelElement = targetElement?.closest('[data-type="panel"]');
-
-                if (
-                    panelElement && // inside a panel
-                    currentPanelRef.current &&
-                    !currentPanelRef.current.contains(panelElement) // not the same panel
-                ) {
-                    // mutation here
-                }
-            };
-
-            // Update the cursor style
-            const globalCursorStyle = document.createElement("style");
-            globalCursorStyle.innerHTML = `* { cursor: not-allowed !important; }`;
-            document.head.appendChild(globalCursorStyle);
-
-            // Add event listeners for cleanup
-            document.addEventListener("mousemove", handleMouseMove);
-            document.addEventListener("mouseup", handleMouseUp);
-        }, 200); // Start effect only after 200ms cooldown
-
-        // Cleanup timeout if the mouse is released quickly
         const handleQuickMouseUp = () => {
             clearTimeout(timeout);
             document.removeEventListener("mouseup", handleQuickMouseUp);
@@ -288,7 +188,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                                 } `}
                             onClick={(e) => handleClick(e, index, item)}
                             onDoubleClick={() => handleDoubleClick(item)}
-                            onMouseDown={(e) => handleMouseDown(e, index, item)}
+                            onMouseDown={() => handleMouseDown(item)}
                         >
                             <span className={`flex items-center text-left ${item.hidden ? "opacity-50" : ""}`}>
                                 <ColoredFileIcon extension={item.extension} />
