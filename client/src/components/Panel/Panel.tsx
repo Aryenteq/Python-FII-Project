@@ -12,10 +12,11 @@ interface PathProps {
     path: string | null;
     setPath: React.Dispatch<React.SetStateAction<string | null>>;
     selectedItems: string[];
+    setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 
-const Panel: React.FC<PathProps> = ({path, setPath, selectedItems}) => {
+const Panel: React.FC<PathProps> = ({path, setPath, selectedItems, setSelectedItems}) => {
     const [prevPath, setPrevPath] = useState<string | null>(path); // in case you enter a wrong path, revert
     const { treeData, isLoading, error, refetch } = useTreeData(path);
 
@@ -72,7 +73,7 @@ const Panel: React.FC<PathProps> = ({path, setPath, selectedItems}) => {
             {isDriveData ? (
                 <DrivesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} />
             ) : (
-                <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} selectedItems={selectedItems} />
+                <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
             )}
         </div>
     );

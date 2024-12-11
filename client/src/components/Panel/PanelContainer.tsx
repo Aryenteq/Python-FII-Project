@@ -16,7 +16,7 @@ const PanelContainer: React.FC = () => {
 
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null);
-    
+
     //
     //
     // Divider resizing
@@ -59,6 +59,12 @@ const PanelContainer: React.FC = () => {
     //
     //
     const handleMouseDown = (e: React.MouseEvent, panel: "left" | "right") => {
+        // Would be better with an ID probably, but we're sure another custom-scrollbar won't exist
+        const tableRowsClass = "custom-scrollbar";
+        if (e.target instanceof HTMLElement && e.target.closest(`.${tableRowsClass}`)) {
+            return;
+        }
+
         // Blur inputs/buttons (eg. path input)
         if (document.activeElement instanceof HTMLElement) {
             document.activeElement.blur();
@@ -82,14 +88,13 @@ const PanelContainer: React.FC = () => {
         setDragEnd({ x: e.clientX, y: e.clientY });
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
         setIsSelecting(false);
         setActivePanel(null);
         if (dragStart && dragEnd) {
             const panelRef = activePanel === "left" ? leftPanelRef.current : rightPanelRef.current;
-            const selected = computeSelectedItems(dragStart, dragEnd, panelRef);
-            setSelectedItems(selected);
-            console.log(selectedItems);
+            const selected = computeSelectedItems(dragStart, dragEnd, panelRef, activePanel === "left" ? leftPath : rightPath);
+            setSelectedItems(() => [...selected]);
         }
         setDragStart(null);
         setDragEnd(null);
@@ -99,7 +104,8 @@ const PanelContainer: React.FC = () => {
     const computeSelectedItems = (
         start: { x: number; y: number },
         end: { x: number; y: number },
-        panelRef: HTMLDivElement | null
+        panelRef: HTMLDivElement | null,
+        path: string | null
     ) => {
         if (!panelRef) return [];
         const rect = panelRef.getBoundingClientRect();
@@ -111,19 +117,32 @@ const PanelContainer: React.FC = () => {
         };
 
         const items = Array.from(panelRef.querySelectorAll(".selectable-item")) as HTMLElement[];
-        const filtereditems = items
+        const filteredItems = items
             .filter((item) => {
                 const itemRect = item.getBoundingClientRect();
                 return !(
                     itemRect.right < selectionBox.left || // Completely to the left
                     itemRect.left > selectionBox.right || // Completely to the right
                     itemRect.bottom < selectionBox.top || // Completely above
-                    itemRect.top > selectionBox.bottom    // Completely below
+                    itemRect.top > selectionBox.bottom // Completely below
                 );
             })
-            .map((item) => item.textContent?.trim() || '');
-        console.log(filtereditems);
-        return filtereditems;
+            .map((item) => {
+                const nameElement = item.querySelector("span:nth-child(1) span:last-child") as HTMLElement;
+                const extensionElement = item.querySelector("span:nth-child(3)") as HTMLElement;
+
+                const name = nameElement?.textContent?.trim() || '';
+                const extension = extensionElement?.textContent?.trim() || '';
+
+                // folders or no extension
+                if (extension === 'File Folder' || !extension.startsWith('.') || extension === '') {
+                    return path + name;
+                }
+                return path + `${name}.${extension}`;
+            })
+            .filter(Boolean); // Remove any empty or null items
+
+        return filteredItems;
     };
 
     const computeSelectionBox = (
@@ -174,7 +193,7 @@ const PanelContainer: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, "left")}
                 ref={leftPanelRef}
             >
-                <Panel path={leftPath} setPath={setLeftPath} selectedItems={selectedItems} />
+                <Panel path={leftPath} setPath={setLeftPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems}/>
                 {isSelecting && activePanel === "left" && dragStart && dragEnd && (
                     <div
                         className="absolute bg-blue-500 opacity-80"
@@ -198,7 +217,7 @@ const PanelContainer: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, "right")}
                 ref={rightPanelRef}
             >
-                <Panel path={rightPath} setPath={setRightPath} selectedItems={selectedItems} />
+                <Panel path={rightPath} setPath={setRightPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems}/>
                 {isSelecting && activePanel === "right" && dragStart && dragEnd && (
                     <div
                         className="absolute bg-blue-500 opacity-80"

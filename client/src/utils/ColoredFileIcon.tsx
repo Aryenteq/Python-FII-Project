@@ -131,10 +131,12 @@ const ColoredFileIcon: React.FC<ColoredFileIconProps> = ({ extension }) => {
     };
 
     return (
-        <FileIcon
-            extension={normalizedExtension}
-            {...(customStyles[extension] || fallbackStyle)}
-        />
+        <span className="w-[16px] h-[16px]">
+            <FileIcon
+                extension={normalizedExtension}
+                {...(customStyles[extension] || fallbackStyle)}
+            />
+        </span>
     );
 };
 

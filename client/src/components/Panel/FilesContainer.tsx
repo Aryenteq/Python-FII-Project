@@ -15,6 +15,7 @@ interface FilesContainerProps {
     setPath: React.Dispatch<React.SetStateAction<string | null>>;
     setPrevPath: React.Dispatch<React.SetStateAction<string | null>>;
     selectedItems: string[];
+    setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const FilesContainer: React.FC<FilesContainerProps> = ({
@@ -23,65 +24,76 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     setPath,
     setPrevPath,
     selectedItems,
+    setSelectedItems
 }) => {
-    const [selectedItem, setSelectedItem] = useState<string | null>(null);
     const [sortField, setSortField] = useState<keyof FileOrDirectory>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
     const directories = data.filter((item) => item.extension === 'File Folder');
     const files = data.filter((item) => item.extension !== 'File Folder');
 
-    const goUpDirectory = () => {
-        if (!path) return;
-        let newPath = path.substring(0, path.lastIndexOf('/')) || null;
+    const sortedDirectories = [...directories].sort((a, b) => {
+        if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;
+        if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+    });
 
-        // C:/ goes to null, not to C:
-        if (newPath && newPath[newPath.length - 1] === ':') {
-            newPath = null;
-        }
-        setPrevPath(path);
-        setPath(newPath);
+    const sortedFiles = [...files].sort((a, b) => {
+        if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;
+        if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const sortedData = sortOrder === 'asc' ? [...sortedDirectories, ...sortedFiles] : [...sortedFiles, ...sortedDirectories];
+
+    const toggleSort = (field: keyof FileOrDirectory) => {
+        setSortField(field);
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     };
 
-    const validPath = Array.isArray(data) && data.length > 0;
+    const getFullName = (item: FileOrDirectory): string => {
+        return item.extension === 'File Folder' ? path + item.name : path + `${item.name}.${item.extension}`;
+    };
 
-    if (!validPath) {
-        return <div className="flex flex-col min-h-0">
-            {/* Go Up Button */}
-            <div className="flex items-center justify-between p-2">
-                <button
-                    onClick={goUpDirectory}
-                    className="text-sm font-bold text-blue-500 hover:underline"
-                    disabled={!path}
-                >
-                    ⬆ Go Up
-                </button>
-                <span className="text-sm text-gray-500">{path || 'This PC'}</span>
-            </div>
-            <div>Empty folder</div>
-        </div>
-    }
+    const handleClick = (e: React.MouseEvent, index: number, item: FileOrDirectory) => {
+        const fullName = getFullName(item);
 
-    // Sorting
-    const sortItems = (items: FileOrDirectory[]) =>
-        [...items].sort((a, b) => {
-            if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;
-            if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1;
-            return 0;
-        });
-
-    const sortedDirectories = sortItems(directories);
-    const sortedFiles = sortItems(files);
-
-    const sortedData =
-        sortOrder === 'asc'
-            ? [...sortedDirectories, ...sortedFiles] // Folders first
-            : [...sortedFiles, ...sortedDirectories]; // Folders last
-
-
-
-    const handleSingleClick = (name: string) => {
-        setSelectedItem(name);
+        if (e.shiftKey) {
+            // Shift+Click
+            if (lastSelectedIndex === null) {
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+                e.preventDefault();
+                window.getSelection()?.removeAllRanges(); // Prevent text selection
+                setSelectedItems([fullName]);
+                setLastSelectedIndex(index);
+                return;
+            }
+            
+            // Prevent text selection
+            e.preventDefault();
+            window.getSelection()?.removeAllRanges();
+            
+            const start = Math.min(lastSelectedIndex, index);
+            const end = Math.max(lastSelectedIndex, index);
+            const range = sortedData.slice(start, end + 1).map(getFullName);
+            
+            setSelectedItems(range);
+        } else if (e.ctrlKey || e.metaKey) {
+            // Ctrl+Click || Cmd+Click
+            if (selectedItems.includes(fullName)) {
+                setSelectedItems(selectedItems.filter((item) => item !== fullName));
+            } else {
+                setSelectedItems([...selectedItems, fullName]);
+            }
+            setLastSelectedIndex(index);
+        } else {
+            // Single Click
+            setSelectedItems([fullName]);
+            setLastSelectedIndex(index);
+        }
     };
 
     const handleDoubleClick = (item: FileOrDirectory) => {
@@ -91,21 +103,17 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
         }
     };
 
-    const toggleSort = (field: keyof FileOrDirectory) => {
-        if (sortField === field) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortField(field);
-            setSortOrder('asc');
-        }
-    };
-
     return (
         <div className="flex flex-col min-h-0">
             {/* Go Up Button */}
             <div className="flex items-center justify-between p-2">
                 <button
-                    onClick={goUpDirectory}
+                    onClick={() => {
+                        if (!path) return;
+                        const newPath = path.substring(0, path.lastIndexOf('/')) || null;
+                        setPrevPath(path);
+                        setPath(newPath);
+                    }}
                     className="text-sm font-bold text-blue-500 hover:underline"
                     disabled={!path}
                 >
@@ -132,32 +140,27 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
 
             {/* Table Rows */}
             <div className="flex-grow overflow-auto custom-scrollbar">
-                {sortedData.map((item, index) => (
-                    <div
-                        key={index}
-                        className={`grid grid-cols-4 gap-2 p-2 border-b border-gray-200 cursor-pointer hover:bg-gray-700 ${selectedItem === item.name ? 'bg-gray-600' : ''
+                {sortedData.map((item, index) => {
+                    const fullName = getFullName(item);
+                    return (
+                        <div
+                            key={index}
+                            className={`selectable-item grid grid-cols-4 gap-2 p-2 border-b border-gray-200 cursor-pointer hover:bg-gray-700 ${
+                                selectedItems.includes(fullName) ? 'bg-gray-600' : ''
                             }`}
-                        onClick={() => handleSingleClick(item.name)} // Single-click to select
-                        onDoubleClick={() => handleDoubleClick(item)} // Double-click to navigate
-                    >
-                        <span className={`flex items-center text-left ${item.hidden ? "opacity-50" : ""}`}>
-                            <div
-                                className="flex justify-center items-center"
-                                style={{
-                                    width: "15px",
-                                    height: "15px",
-                                }}
-                            >
+                            onClick={(e) => handleClick(e, index, item)}
+                            onDoubleClick={() => handleDoubleClick(item)}
+                        >
+                            <span className="flex items-center text-left">
                                 <ColoredFileIcon extension={item.extension} />
-                            </div>
-                            <span className="ml-2">{item.name}</span>
-                        </span>
-                        <span className="text-left">{item.date_created}</span>
-                        <span className="text-left">{item.extension}</span>
-                        <span className="text-right">{item.size > 0 ? `${item.size} KB` : ''}</span>
-
-                    </div>
-                ))}
+                                <span className="ml-2">{item.name}</span>
+                            </span>
+                            <span className="text-left">{item.date_created}</span>
+                            <span className="text-left">{item.extension}</span>
+                            <span className="text-right">{item.size > 0 ? `${item.size} KB` : ''}</span>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
