@@ -16,6 +16,7 @@ const PanelContainer: React.FC = () => {
 
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null);
+    const currentPanelRef = useRef<HTMLDivElement | null>(null);
 
     //
     //
@@ -59,12 +60,6 @@ const PanelContainer: React.FC = () => {
     //
     //
     const handleMouseDown = (e: React.MouseEvent, panel: "left" | "right") => {
-        // Would be better with an ID probably, but we're sure another custom-scrollbar won't exist
-        const tableRowsClass = "custom-scrollbar";
-        if (e.target instanceof HTMLElement && e.target.closest(`.${tableRowsClass}`)) {
-            return;
-        }
-
         // Blur inputs/buttons (eg. path input)
         if (document.activeElement instanceof HTMLElement) {
             document.activeElement.blur();
@@ -75,11 +70,19 @@ const PanelContainer: React.FC = () => {
             e.preventDefault();
         }
 
-        setActivePanel(panel);
-        setIsSelecting(true);
-        setDragStart({ x: e.clientX, y: e.clientY });
-        setDragEnd(null);
-        setSelectedItems([]); // Reset selected items
+        // Case 1: Drag an element - handled inside FilesContainer
+        const panelType = "panel";
+        if (e.target instanceof HTMLElement && e.target.closest(`[data-type="${panelType}"]`)) {
+            return;
+        // Case 2: Do the selection box
+        } else {
+            currentPanelRef.current = panel === "left" ? leftPanelRef.current : rightPanelRef.current;
+            setActivePanel(panel);
+            setIsSelecting(true);
+            setDragStart({ x: e.clientX, y: e.clientY });
+            setDragEnd(null);
+            setSelectedItems([]); // Reset selected items
+        }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -193,7 +196,7 @@ const PanelContainer: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, "left")}
                 ref={leftPanelRef}
             >
-                <Panel path={leftPath} setPath={setLeftPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems}/>
+                <Panel path={leftPath} setPath={setLeftPath} otherPath={rightPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={leftPanelRef} currentPanelRef={currentPanelRef} />
                 {isSelecting && activePanel === "left" && dragStart && dragEnd && (
                     <div
                         className="absolute bg-blue-500 opacity-80"
@@ -217,7 +220,7 @@ const PanelContainer: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, "right")}
                 ref={rightPanelRef}
             >
-                <Panel path={rightPath} setPath={setRightPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems}/>
+                <Panel path={rightPath} setPath={setRightPath} otherPath={leftPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={rightPanelRef} currentPanelRef={currentPanelRef} />
                 {isSelecting && activePanel === "right" && dragStart && dragEnd && (
                     <div
                         className="absolute bg-blue-500 opacity-80"

@@ -11,17 +11,21 @@ import newFileIcon from "../../media/svgs/new-file.svg";
 interface PathProps {
     path: string | null;
     setPath: React.Dispatch<React.SetStateAction<string | null>>;
+    otherPath: string | null;
     selectedItems: string[];
     setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
+    panelRef: React.MutableRefObject<HTMLDivElement | null>;
+    currentPanelRef: React.MutableRefObject<HTMLDivElement | null>;
 }
 
 
-const Panel: React.FC<PathProps> = ({path, setPath, selectedItems, setSelectedItems}) => {
+const Panel: React.FC<PathProps> = ({path, setPath, otherPath, selectedItems, setSelectedItems, panelRef, currentPanelRef}) => {
     const [prevPath, setPrevPath] = useState<string | null>(path); // in case you enter a wrong path, revert
     const { treeData, isLoading, error, refetch } = useTreeData(path);
 
     // Handle path change
     const handlePathChange = (newPath: string) => {
+        currentPanelRef.current = panelRef.current;
         setPrevPath(path);
         setPath(newPath);
         refetch();
@@ -73,7 +77,7 @@ const Panel: React.FC<PathProps> = ({path, setPath, selectedItems, setSelectedIt
             {isDriveData ? (
                 <DrivesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} />
             ) : (
-                <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
+                <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} otherPath={otherPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={panelRef} currentPanelRef={currentPanelRef}/>
             )}
         </div>
     );
