@@ -111,7 +111,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     };
 
 
-    const { isDragging, setDragging, initializeDragAndDrop } = useDragAndDrop({
+    const { isDragging, initializeDragAndDrop } = useDragAndDrop({
         otherPath,
         currentPanelRef,
         selectedItems,
@@ -122,7 +122,6 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
         currentPanelRef.current = panelRef.current;
 
         const timeout = setTimeout(() => {
-            setDragging(true);
             if (!selectedItems.includes(fullName)) {
                 setSelectedItems([fullName]);
             }
@@ -176,16 +175,15 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
             </div>
 
             {/* Table Rows */}
-            <div className={`flex-grow overflow-auto custom-scrollbar pb-10 ${isDragging ? '' : 'cursor-pointer'}`} data-type='panel'>
+            <div className={`flex-grow overflow-auto custom-scrollbar pb-10 cursor-pointer`} data-type='panel'>
                 {sortedData.map((item, index) => {
                     const fullName = getFullName(item);
                     return (
                         <div
                             key={index}
-                            className={`selectable-item grid grid-cols-4 gap-2 p-2 border-b border-gray-200 hover:bg-gray-700 ${selectedItems.includes(fullName) && panelRef.current === currentPanelRef.current
-                                ? 'bg-gray-600'
-                                : ''
-                                } `}
+                            className={`selectable-item grid grid-cols-4 gap-2 p-2 border-b border-gray-200 hover:bg-gray-700
+                                ${selectedItems.includes(fullName) && (isDragging || panelRef.current === currentPanelRef.current)
+                                ? 'bg-gray-600' : '' } `}
                             onClick={(e) => handleClick(e, index, item)}
                             onDoubleClick={() => handleDoubleClick(item)}
                             onMouseDown={() => handleMouseDown(item)}

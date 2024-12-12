@@ -12,6 +12,7 @@ export const useDragAndDrop = ({
     selectedItems,
 }: UseDragAndDropProps) => {
     const [isDragging, setDragging] = useState(false);
+    const isDraggingRef = useRef(false);
     const cursorEffect = useRef<HTMLDivElement | null>(null);
     const cursorText = useRef<HTMLDivElement | null>(null);
     const globalCursorStyle = useRef<HTMLStyleElement | null>(null);
@@ -59,7 +60,7 @@ export const useDragAndDrop = ({
     };
 
     const handleMouseMove = (event: MouseEvent) => {
-        if (!cursorEffect.current || !cursorText.current) return;
+        if (!isDraggingRef.current || !cursorEffect.current || !cursorText.current) return;
 
         cursorEffect.current.style.left = `${event.clientX + 5}px`;
         cursorEffect.current.style.top = `${event.clientY + 5}px`;
@@ -115,7 +116,8 @@ export const useDragAndDrop = ({
     };
 
     const handleMouseUp = (event: MouseEvent) => {
-        let finalPath = (cursorText.current?.textContent)?.slice(8);
+        let finalPath = (cursorText.current?.textContent)?.slice(8); // get rid of "Copy to "
+        isDraggingRef.current = false;
         setDragging(false);
         cleanupCursorElements();
         document.removeEventListener('mousemove', handleMouseMove);
@@ -136,13 +138,14 @@ export const useDragAndDrop = ({
 
     const initializeDragAndDrop = () => {
         createCursorElements();
+        isDraggingRef.current = true;
+        setDragging(true);
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     };
 
     return {
         isDragging,
-        setDragging,
         initializeDragAndDrop,
     };
 };

@@ -13,7 +13,10 @@ def handle_post(path, body=None):
             reload(module)
             
             if hasattr(module, "handle_post"):
-                return module.handle_post(path, body)
+                status, response = module.handle_post(path, body)
+                
+                if status != 404:
+                    return status, response
             
         except ImportError as e:
             print(f"Failed to import {module_name}: {e}")

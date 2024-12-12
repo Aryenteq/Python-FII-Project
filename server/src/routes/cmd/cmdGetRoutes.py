@@ -5,3 +5,5 @@ def handle_get(path, query_params=None):
     
     if path == "/tree":
         return handle_get_tree(query_params or {})
+    
+    return 404, '{"error": "Not Found"}'
