@@ -4,14 +4,16 @@ interface UseDragAndDropProps {
     otherPath: string | null;
     currentPanelRef: React.MutableRefObject<HTMLDivElement | null>;
     selectedItems: string[];
-    deleteItems: (items: string[]) => void;
+    // deleteItems: (items: string[]) => void;
+    setDeleteConfirmationOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const useDragAndDrop = ({
     otherPath,
     currentPanelRef,
     selectedItems,
-    deleteItems
+    // deleteItems,
+    setDeleteConfirmationOpen
 }: UseDragAndDropProps) => {
     const [isDragging, setDragging] = useState(false);
     const isDraggingRef = useRef(false);
@@ -134,7 +136,8 @@ export const useDragAndDrop = ({
             console.log(finalPath);
             console.log(selectedItems);
         } else if (deleteElement) {
-            deleteItems(selectedItems);
+            // deleteItems(selectedItems);
+            setDeleteConfirmationOpen(true);
         }
     };
 

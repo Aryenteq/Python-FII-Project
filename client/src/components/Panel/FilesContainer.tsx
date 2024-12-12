@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ColoredFileIcon from './ColoredFileIcon';
 import { useDragAndDrop } from '../../hooks/DragAndDropState';
-import { useDeleteItems } from '../mutation/deleteMutation';
+import DeleteConfirmation from './DeleteConfirmation';
 
 interface FileOrDirectory {
     name: string;
@@ -34,7 +34,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     panelRef,
     currentPanelRef
 }) => {
-    const { mutate: deleteItems, isLoading } = useDeleteItems();
+    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false);
 
     const [sortField, setSortField] = useState<keyof FileOrDirectory>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -118,7 +118,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
         otherPath,
         currentPanelRef,
         selectedItems,
-        deleteItems
+        setDeleteConfirmationOpen
     });
 
     const handleMouseDown = (item: FileOrDirectory) => {
@@ -140,6 +140,18 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
 
         document.addEventListener("mouseup", handleQuickMouseUp);
     };
+
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if (e.key === 'Delete' && selectedItems) {
+                e.preventDefault();
+                setDeleteConfirmationOpen(true);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyPress);
+        return () => document.removeEventListener('keydown', handleKeyPress);
+    }, [selectedItems]);
 
     return (
         <div className="flex flex-col min-h-0">
@@ -188,7 +200,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                             key={index}
                             className={`selectable-item grid grid-cols-4 gap-2 p-2 border-b border-gray-200 hover:bg-gray-700
                                 ${selectedItems.includes(fullName) && (isDragging || panelRef.current === currentPanelRef.current)
-                                ? 'bg-gray-600' : '' } `}
+                                    ? 'bg-gray-600' : ''} `}
                             onClick={(e) => handleClick(e, index, item)}
                             onDoubleClick={() => handleDoubleClick(item)}
                             onMouseDown={() => handleMouseDown(item)}
@@ -204,6 +216,12 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                     );
                 })}
             </div>
+            {deleteConfirmationOpen && (
+                <DeleteConfirmation
+                    setDeleteConfirmationOpen={setDeleteConfirmationOpen}
+                    selectedItems={selectedItems}
+                />
+            )}
         </div>
     );
 };

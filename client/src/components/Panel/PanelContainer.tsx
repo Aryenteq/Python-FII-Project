@@ -60,6 +60,13 @@ const PanelContainer: React.FC = () => {
     //
     //
     const handleMouseDown = (e: React.MouseEvent, panel: "left" | "right") => {
+        // Ignore clicks inside dialog (delete confirmation)
+        const dialogElement = document.querySelector("#dialog");
+        if (dialogElement && dialogElement.contains(e.target as Node)) {
+            console.log("ok");
+            return; // Ignore clicks inside the dialog
+        }
+
         // Blur inputs/buttons (eg. path input)
         if (document.activeElement instanceof HTMLElement) {
             document.activeElement.blur();
@@ -74,7 +81,7 @@ const PanelContainer: React.FC = () => {
         const panelType = "panel";
         if (e.target instanceof HTMLElement && e.target.closest(`[data-type="${panelType}"]`)) {
             return;
-        // Case 2: Do the selection box
+            // Case 2: Do the selection box
         } else {
             currentPanelRef.current = panel === "left" ? leftPanelRef.current : rightPanelRef.current;
             setActivePanel(panel);
