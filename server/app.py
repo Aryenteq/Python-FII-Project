@@ -2,6 +2,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from server.src.routes.getRoutes import handle_get
 from server.src.routes.postRoutes import handle_post
+from server.src.routes.deleteRoutes import handle_delete
 
 import json
 
@@ -12,7 +13,7 @@ class Server(BaseHTTPRequestHandler):
         
         # CORS headers
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.end_headers()
 
@@ -45,6 +46,19 @@ class Server(BaseHTTPRequestHandler):
         status_code, response = handle_post(path, body)
         self._set_headers(status_code)
         self.wfile.write(response.encode("utf-8"))
+        
+    def do_DELETE(self):
+        parsed_url = urlparse(self.path)
+        path = parsed_url.path
+
+        # Extract query parameters (if any)
+        query_params = parse_qs(parsed_url.query)
+
+        # Route the DELETE request
+        status_code, response = handle_delete(path, query_params)
+        self._set_headers(status_code)
+        self.wfile.write(response.encode("utf-8"))
+        
 
 if __name__ == "__main__":
     server_address = ("127.0.0.1", 8000)

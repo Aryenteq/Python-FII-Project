@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ColoredFileIcon from './ColoredFileIcon';
 import { useDragAndDrop } from '../../hooks/DragAndDropState';
+import { useDeleteItems } from '../mutation/deleteMutation';
 
 interface FileOrDirectory {
     name: string;
@@ -33,6 +34,8 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     panelRef,
     currentPanelRef
 }) => {
+    const { mutate: deleteItems, isLoading } = useDeleteItems();
+
     const [sortField, setSortField] = useState<keyof FileOrDirectory>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
@@ -60,7 +63,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     };
 
     const getFullName = (item: FileOrDirectory): string => {
-        return item.extension === 'File Folder' ? path + item.name : path + `${item.name}.${item.extension}`;
+        return item.extension === 'File Folder' ? path + '/' + item.name : path + `/${item.name}${item.extension}`;
     };
 
     const handleClick = (e: React.MouseEvent, index: number, item: FileOrDirectory) => {
@@ -115,15 +118,17 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
         otherPath,
         currentPanelRef,
         selectedItems,
+        deleteItems
     });
 
     const handleMouseDown = (item: FileOrDirectory) => {
-        const fullName = `${path}/${item.name}`;
+        const fullName = getFullName(item);
         currentPanelRef.current = panelRef.current;
 
         const timeout = setTimeout(() => {
             if (!selectedItems.includes(fullName)) {
-                setSelectedItems([fullName]);
+                console.log("PROBLEMA AICI - nu se updateaza corect");
+                setSelectedItems(() => [fullName]);
             }
             initializeDragAndDrop();
         }, 200);

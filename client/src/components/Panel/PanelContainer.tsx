@@ -141,7 +141,7 @@ const PanelContainer: React.FC = () => {
                 if (extension === 'File Folder' || !extension.startsWith('.') || extension === '') {
                     return path + name;
                 }
-                return path + `${name}.${extension}`;
+                return path + `/${name}${extension}`;
             })
             .filter(Boolean); // Remove any empty or null items
 

@@ -68,10 +68,14 @@ def handle_move(body):
 # 
 # 
 
-def handle_delete(query_params):
+def delete_items_controller(query_params):
     """DELETE /tree: delete items specified in query_params (can be an array)"""
-    items = query_params.get("items", [None])
-
-    status_code, deleted_items = delete_items(items)
+    items = query_params.get("items", [])
     
+    # Check if items is empty
+    if not items:
+        return 400, json.dumps({"error": "No items provided"})
+
+    print(f"Items to delete: {items}")  # This will now only print the list of paths
+    status_code, deleted_items = delete_items(items)
     return status_code, json.dumps(deleted_items)

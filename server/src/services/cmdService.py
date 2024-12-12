@@ -81,6 +81,7 @@ def list_directory_contents(path=None):
                     })
                 else:
                     extension = os.path.splitext(entry)[1] if '.' in entry else "No Extension"
+                    entry = os.path.splitext(entry)[0] if '.' in entry else entry
                     structure.append({
                         "name": entry,
                         "extension": extension,
@@ -230,6 +231,7 @@ def delete_items(items):
     Returns:
         tuple: (status_code, response_dict) - Status code and response details.
     """
+    print(items)
     try:
         if not isinstance(items, list) or not items:
             raise ValueError("The 'items' parameter must be a non-empty list of file or directory paths.")
