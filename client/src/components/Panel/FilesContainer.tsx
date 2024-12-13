@@ -174,7 +174,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                     ⬆ Go Up
                 </button>
             </div>
-
+    
             {/* Table Header */}
             <div className="grid grid-cols-4 gap-2 p-2 bg-blue-900 text-white text-sm font-bold">
                 <button onClick={() => toggleSort('name')} className="text-left">
@@ -190,32 +190,40 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                     Size {sortField === 'size' && (sortOrder === 'asc' ? '▲' : '▼')}
                 </button>
             </div>
-
+    
             {/* Table Rows */}
-            <div className={`flex-grow overflow-auto custom-scrollbar pb-10 cursor-pointer`} data-type='panel'>
-                {sortedData.map((item, index) => {
-                    const fullName = getFullName(item);
-                    return (
-                        <div
-                            key={index}
-                            className={`selectable-item grid grid-cols-4 gap-2 p-2 border-b border-gray-200 hover:bg-gray-700
-                                ${selectedItems.includes(fullName) && (isDragging || panelRef.current === currentPanelRef.current)
-                                    ? 'bg-gray-600' : ''} `}
-                            onClick={(e) => handleClick(e, index, item)}
-                            onDoubleClick={() => handleDoubleClick(item)}
-                            onMouseDown={() => handleMouseDown(item)}
-                        >
-                            <span className={`flex items-center text-left ${item.hidden ? "opacity-50" : ""}`}>
-                                <ColoredFileIcon extension={item.extension} />
-                                <span className="ml-2">{item.name}</span>
-                            </span>
-                            <span className="text-left">{item.date_created}</span>
-                            <span className="text-left">{item.extension}</span>
-                            <span className="text-right">{item.size > 0 ? `${item.size} KB` : ''}</span>
-                        </div>
-                    );
-                })}
+            <div className={`flex-grow overflow-auto custom-scrollbar pb-10 ${sortedData && sortedData.length !== 0 ? 'cursor-pointer' : ''}`} data-type="panel">
+                {(!sortedData || sortedData.length === 0) ? (
+                    <div className="text-center text-gray-500 mt-4">Folder is empty</div>
+                ) : (
+                    sortedData.map((item, index) => {
+                        const fullName = getFullName(item);
+                        return (
+                            <div
+                                key={index}
+                                className={`selectable-item grid grid-cols-4 gap-2 p-2 border-b border-gray-200 hover:bg-gray-700 ${
+                                    selectedItems.includes(fullName) &&
+                                    (isDragging || panelRef.current === currentPanelRef.current)
+                                        ? 'bg-gray-600'
+                                        : ''
+                                }`}
+                                onClick={(e) => handleClick(e, index, item)}
+                                onDoubleClick={() => handleDoubleClick(item)}
+                                onMouseDown={() => handleMouseDown(item)}
+                            >
+                                <span className={`flex items-center text-left ${item.hidden ? 'opacity-50' : ''}`}>
+                                    <ColoredFileIcon extension={item.extension} />
+                                    <span className="ml-2">{item.name}</span>
+                                </span>
+                                <span className="text-left">{item.date_created}</span>
+                                <span className="text-left">{item.extension}</span>
+                                <span className="text-right">{item.size > 0 ? `${item.size} KB` : ''}</span>
+                            </div>
+                        );
+                    })
+                )}
             </div>
+    
             {deleteConfirmationOpen && (
                 <DeleteConfirmation
                     setDeleteConfirmationOpen={setDeleteConfirmationOpen}
@@ -223,7 +231,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                 />
             )}
         </div>
-    );
+    );    
 };
 
 export default FilesContainer;

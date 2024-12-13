@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import Panel from "./Panel";
+import { RefetchProvider } from "../../context/RefetchContext";
 
 const PanelContainer: React.FC = () => {
     const [leftPath, setLeftPath] = useState<string | null>(null);
     const [rightPath, setRightPath] = useState<string | null>(null);
-    const [leftPanelWidth, setLeftPanelWidth] = useState(50);
-    const [isDraggingDivider, setIsDraggingDivider] = useState(false);
+    const [leftPanelWidth, setLeftPanelWidth] = useState<number>(50);
+    const [isDraggingDivider, setIsDraggingDivider] = useState<boolean>(false);
 
     // Drag selection logic
     const [activePanel, setActivePanel] = useState<"left" | "right" | null>(null);
@@ -63,7 +64,6 @@ const PanelContainer: React.FC = () => {
         // Ignore clicks inside dialog (delete confirmation)
         const dialogElement = document.querySelector("#dialog");
         if (dialogElement && dialogElement.contains(e.target as Node)) {
-            console.log("ok");
             return; // Ignore clicks inside the dialog
         }
 
@@ -146,7 +146,7 @@ const PanelContainer: React.FC = () => {
 
                 // folders or no extension
                 if (extension === 'File Folder' || !extension.startsWith('.') || extension === '') {
-                    return path + name;
+                    return path + '/' + name;
                 }
                 return path + `/${name}${extension}`;
             })
@@ -203,7 +203,9 @@ const PanelContainer: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, "left")}
                 ref={leftPanelRef}
             >
-                <Panel path={leftPath} setPath={setLeftPath} otherPath={rightPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={leftPanelRef} currentPanelRef={currentPanelRef} />
+                <RefetchProvider>
+                    <Panel path={leftPath} setPath={setLeftPath} otherPath={rightPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={leftPanelRef} currentPanelRef={currentPanelRef} />
+                </RefetchProvider>
                 {isSelecting && activePanel === "left" && dragStart && dragEnd && (
                     <div
                         className="absolute bg-blue-500 opacity-80"
@@ -227,7 +229,9 @@ const PanelContainer: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, "right")}
                 ref={rightPanelRef}
             >
-                <Panel path={rightPath} setPath={setRightPath} otherPath={leftPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={rightPanelRef} currentPanelRef={currentPanelRef} />
+                <RefetchProvider>
+                    <Panel path={rightPath} setPath={setRightPath} otherPath={leftPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={rightPanelRef} currentPanelRef={currentPanelRef} />
+                </RefetchProvider>
                 {isSelecting && activePanel === "right" && dragStart && dragEnd && (
                     <div
                         className="absolute bg-blue-500 opacity-80"

@@ -7,6 +7,7 @@ import Path from './Path';
 import deleteIcon from "../../media/svgs/delete.svg";
 import newFolderIcon from "../../media/svgs/new-folder.svg";
 import newFileIcon from "../../media/svgs/new-file.svg";
+import { useRefetch } from '../../context/RefetchContext';
 
 interface PathProps {
     path: string | null;
@@ -19,7 +20,8 @@ interface PathProps {
 }
 
 
-const Panel: React.FC<PathProps> = ({path, setPath, otherPath, selectedItems, setSelectedItems, panelRef, currentPanelRef}) => {
+const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, setSelectedItems, panelRef, currentPanelRef }) => {
+    const { refetchPaths, removePathFromRefetch } = useRefetch();
     const [prevPath, setPrevPath] = useState<string | null>(path); // in case you enter a wrong path, revert
     const { treeData, isLoading, error, refetch } = useTreeData(path);
 
@@ -36,6 +38,12 @@ const Panel: React.FC<PathProps> = ({path, setPath, otherPath, selectedItems, se
             setPath(prevPath);
         }
     }, [error, prevPath, setPath]);
+
+    useEffect(() => {
+        if (path && refetchPaths.includes(path)) {
+            refetch().then(() => removePathFromRefetch(path));
+        }
+    }, [path, refetchPaths, refetch, removePathFromRefetch]);
 
     if (isLoading) {
         return <div className="flex-grow min-h-full flex items-center justify-center">Loading...</div>;
@@ -77,7 +85,7 @@ const Panel: React.FC<PathProps> = ({path, setPath, otherPath, selectedItems, se
             {isDriveData ? (
                 <DrivesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} />
             ) : (
-                <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} otherPath={otherPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={panelRef} currentPanelRef={currentPanelRef}/>
+                <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} otherPath={otherPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={panelRef} currentPanelRef={currentPanelRef} />
             )}
         </div>
     );

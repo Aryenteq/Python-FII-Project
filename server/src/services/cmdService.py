@@ -231,25 +231,25 @@ def delete_items(items):
     Returns:
         tuple: (status_code, response_dict) - Status code and response details.
     """
-    print(items)
+    changed_paths = set()
     try:
         if not isinstance(items, list) or not items:
             raise ValueError("The 'items' parameter must be a non-empty list of file or directory paths.")
         
-        deleted_items = []
         for item in items:
             item = os.path.abspath(os.path.normpath(item))
+            parent_dir = os.path.dirname(item) # parent dir
             if not os.path.exists(item):
                 raise FileNotFoundError(f"The item '{item}' does not exist.")
             
             if os.path.isfile(item):
                 os.remove(item)  # Delete the file
+                changed_paths.add(parent_dir)
             elif os.path.isdir(item):
-                shutil.rmtree(item)  # Delete the directory and its contents
-            
-            deleted_items.append(item)
+                shutil.rmtree(item)  # Delete the directory
+                changed_paths.add(parent_dir)
         
-        return 200, {"message": "Items deleted successfully", "deleted_items": deleted_items}
+        return 200, {"message": "Items deleted successfully", "changed_paths": list(changed_paths)}
     
     except FileNotFoundError as e:
         return 404, {"error": str(e)}
