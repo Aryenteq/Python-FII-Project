@@ -12,8 +12,8 @@ export const useDeleteItems = () => {
             addPathsToRefetch(data);
         },
         onError: (error: any) => {
-            const parsedMessage = error.message || 'An unknown error occurred while deleting items.';
-            setInfo({ message: parsedMessage, isError: true });
+            const errorMessage = error.data?.error || error.message || 'An unknown error occurred while deleting items.';
+            setInfo({ message: errorMessage, isError: true });
         },
     });
 

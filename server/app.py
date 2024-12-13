@@ -28,7 +28,7 @@ class Server(BaseHTTPRequestHandler):
         # Route the request
         status_code, response = handle_get(path, query_params)
         self._set_headers(status_code)
-        self.wfile.write(response.encode("utf-8"))
+        self.wfile.write(json.dumps(response).encode("utf-8"))
     
     def do_POST(self):
         parsed_url = urlparse(self.path)
@@ -45,7 +45,7 @@ class Server(BaseHTTPRequestHandler):
         # Route the request
         status_code, response = handle_post(path, body)
         self._set_headers(status_code)
-        self.wfile.write(response.encode("utf-8"))
+        self.wfile.write(json.dumps(response).encode("utf-8"))
         
     def do_DELETE(self):
         parsed_url = urlparse(self.path)
@@ -57,7 +57,7 @@ class Server(BaseHTTPRequestHandler):
         # Route the DELETE request
         status_code, response = handle_delete(path, query_params)
         self._set_headers(status_code)
-        self.wfile.write(response.encode("utf-8"))
+        self.wfile.write(json.dumps(response).encode("utf-8"))
         
 
 if __name__ == "__main__":

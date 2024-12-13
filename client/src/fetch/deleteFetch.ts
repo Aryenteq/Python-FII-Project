@@ -8,7 +8,9 @@ export const deleteItemsRequest = async (items: string[]) => {
 
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete items');
+        const error = new Error(errorData.message || 'Delete failed');
+        (error as any).data = errorData;
+        throw error;
     }
 
     return response.json();

@@ -14,8 +14,8 @@ export const useTreeData = (path: string | null) => {
             retry: false,
             retryDelay: 0,
             onError: (error: any) => {
-                const parsedMessage = error.message || 'An unknown error occurred while fetching directories and files.';
-                setInfo({ message: parsedMessage, isError: true });
+                const errorMessage = error.data?.error || error.message || 'An unknown error occurred while fetching directories and files.';
+                setInfo({ message: errorMessage, isError: true });
             },
         }
     );

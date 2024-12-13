@@ -55,10 +55,10 @@ def list_directory_contents(path=None):
         return 200, list_drives()
 
     if not os.path.exists(path):
-        return 404, json.dumps({"error": f"The path '{path}' does not exist."})
+        return 404, {"error": f"The path '{path}' does not exist."}
 
     if not os.path.isdir(path):
-        return 400, json.dumps({"error": f"The path '{path}' is not a directory."})
+        return 400, {"error": f"The path '{path}' is not a directory."}
 
 
     try:
@@ -117,9 +117,9 @@ def list_directory_contents(path=None):
                 })
         return 200, structure
     except PermissionError:
-        return 403, json.dumps({"error": "Permission Denied: Access denied to the directory."})
+        return 403, {"error": "Permission Denied: Access denied to the directory."}
     except Exception as e:
-        return 500, json.dumps({"error": str(e)})
+        return 500, {"error": str(e)}
 
     
 
@@ -168,22 +168,22 @@ def copy_items(items, destination):
                 shutil.copytree(item, dest_path, dirs_exist_ok=True)  # For directories
                 changed_paths.add(destination)
         
-        return 200, json.dumps({
+        return 200, {
             "message": "Items copied successfully",
             "changed_paths": list(changed_paths)
-        })
+        }
     
     except FileNotFoundError as e:
-        return 404, json.dumps({"error": str(e)})
+        return 404, {"error": str(e)}
     
     except ValueError as e:
-        return 400, json.dumps({"error": str(e)})
+        return 400, {"error": str(e)}
     
     except PermissionError as e:
-        return 403, json.dumps({"error": f"Permission denied: {str(e)}"})
+        return 403, {"error": f"Permission denied: {str(e)}"}
     
     except Exception as e:
-        return 500, json.dumps({"error": str(e)})
+        return 500, {"error": str(e)}
     
 
 def move_items(items, destination):
@@ -222,32 +222,32 @@ def move_items(items, destination):
         # 2: Delete
         delete_status, delete_response = delete_items(items)
         if delete_status != 200:
-            return delete_status, json.dumps({
+            return delete_status, {
                 "message": "Move partially completed. Items copied but not deleted.",
                 "changed_paths": list(changed_paths),
                 "delete_error": delete_response
-            })
+            }
 
         # Changed paths = original paths (folders containing deleted files)
         deleted_paths = json.loads(delete_response).get("changed_paths", [])
         changed_paths.update(deleted_paths)
 
-        return 200, json.dumps({
+        return 200, {
             "message": "Items moved successfully",
             "changed_paths": list(changed_paths)
-        })
+        }
 
     except FileNotFoundError as e:
-        return 404, json.dumps({"error": str(e)})
+        return 404, {"error": str(e)}
     
     except ValueError as e:
-        return 400, json.dumps({"error": str(e)})
+        return 400, {"error": str(e)}
     
     except PermissionError as e:
-        return 403, json.dumps({"error": f"Permission denied: {str(e)}"})
+        return 403, {"error": f"Permission denied: {str(e)}"}
     
     except Exception as e:
-        return 500, json.dumps({"error": str(e)})
+        return 500, {"error": str(e)}
     
 # 
 # 
@@ -283,16 +283,16 @@ def delete_items(items):
                 shutil.rmtree(item)  # Delete the directory
                 changed_paths.add(parent_dir)
         
-        return 200, json.dumps({"message": "Items deleted successfully", "changed_paths": list(changed_paths)})
+        return 200, {"message": "Items deleted successfully", "changed_paths": list(changed_paths)}
     
     except FileNotFoundError as e:
-        return 404, json.dumps({"error": str(e)})
+        return 404, {"error": str(e)}
     
     except ValueError as e:
-        return 400, json.dumps({"error": str(e)})
+        return 400, {"error": str(e)}
     
     except PermissionError as e:
-        return 403, json.dumps({"error": f"Permission denied: {str(e)}"})
+        return 403, {"error": f"Permission denied: {str(e)}"}
     
     except Exception as e:
-        return 500, json.dumps({"error": str(e)})
+        return 500, {"error": str(e)}

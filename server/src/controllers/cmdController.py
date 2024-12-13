@@ -1,5 +1,4 @@
 from server.src.services.cmdService import list_drives, list_directory_contents, copy_items, delete_items, move_items
-import json
 
 # 
 # 
@@ -16,7 +15,7 @@ def handle_get_tree(query_params):
     else:
         status_code, directory_structure = 200, list_drives()
     
-    return status_code, json.dumps(directory_structure)
+    return status_code, directory_structure
 
 
 
@@ -27,40 +26,28 @@ def handle_get_tree(query_params):
 # 
 
 def handle_copy(body):
-    try:
-        items = body.get("items")
-        destination = body.get("destination")
+    items = body.get("items")
+    destination = body.get("destination")
         
-        if not items or not destination:
-            raise ValueError("Missing required parameters: 'items' or 'destination'")
+    if not items or not destination:
+        return 400, {"error": "Missing required parameters: 'items' or 'destination'"}
         
-        status_code, response = copy_items(items, destination)
+    status_code, response = copy_items(items, destination)
         
-        return status_code, json.dumps(response)
-    
-    except ValueError as e:
-        return 400, json.dumps({"error": str(e)})
-    
-    except Exception as e:
-        return 500, json.dumps({"error": "Internal Server Error", "details": str(e)})
+    return status_code, response
+
+
 
 def handle_move(body):
-    try:
-        items = body.get("items")
-        destination = body.get("destination")
+    items = body.get("items")
+    destination = body.get("destination")
         
-        if not items or not destination:
-            raise ValueError("Missing required parameters: 'items' or 'destination'")
+    if not items or not destination:
+        return 400, {"error": "Missing required parameters: 'items' or 'destination'"}
         
-        status_code, response = move_items(items, destination)
+    status_code, response = move_items(items, destination)
         
-        return status_code, json.dumps(response)
-    
-    except ValueError as e:
-        return 400, json.dumps({"error": str(e)})
-    
-    except Exception as e:
-        return 500, json.dumps({"error": "Internal Server Error", "details": str(e)})
+    return status_code, response
     
 # 
 # 
@@ -74,7 +61,7 @@ def delete_items_controller(query_params):
     
     # Check if items is empty
     if not items:
-        return 400, json.dumps({"error": "No items provided"})
+        return 400, {"error": "No items provided"}
 
     status_code, deleted_items = delete_items(items)
-    return status_code, json.dumps(deleted_items)
+    return status_code, deleted_items

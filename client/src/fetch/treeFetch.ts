@@ -6,8 +6,10 @@ export const fetchTreeData = async (path: string | null): Promise<any> => {
     const response = await fetch(url);
 
     if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        const error = new Error(errorData.message || 'Fetch failed');
+        (error as any).data = errorData;
+        throw error;
     }
 
     return response.json();
