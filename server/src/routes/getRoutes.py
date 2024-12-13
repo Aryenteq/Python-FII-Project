@@ -1,4 +1,3 @@
-import json
 from importlib import import_module, reload
 
 SEARCH_MODULES = [
@@ -25,4 +24,4 @@ def handle_get(path, query_params=None):
             print(f"Error in module {module_name}: {e}")
     
     # Invalid route
-    return 404, json.dumps({"error": "Not found"})
+    return 404, {"error": "Not found"}

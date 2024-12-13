@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useMoveItems } from '../components/mutation/moveMutation';
 
 interface UseDragAndDropProps {
     otherPath: string | null;
@@ -11,13 +12,14 @@ export const useDragAndDrop = ({
     otherPath,
     currentPanelRef,
     selectedItems,
-    setDeleteConfirmationOpen
+    setDeleteConfirmationOpen,
 }: UseDragAndDropProps) => {
     const [isDragging, setDragging] = useState(false);
     const isDraggingRef = useRef(false);
     const cursorEffect = useRef<HTMLDivElement | null>(null);
     const cursorText = useRef<HTMLDivElement | null>(null);
     const globalCursorStyle = useRef<HTMLStyleElement | null>(null);
+    const { mutate: moveItems } = useMoveItems();
 
     const createCursorElements = () => {
         if (!globalCursorStyle.current) {
@@ -73,15 +75,15 @@ export const useDragAndDrop = ({
         const panelElement = targetElement?.closest('[data-type="panel"]');
         const deleteElement = targetElement?.closest('[datatype="delete"]');
 
-        
+
         if (((panelElement && currentPanelRef.current &&
             currentPanelRef.current.contains(panelElement)) || // same panel
             !panelElement) && !deleteElement) { // not inside a panel
-                if (!globalCursorStyle.current) {
-                    globalCursorStyle.current = document.createElement('style');
-                    globalCursorStyle.current.innerHTML = `* { cursor: not-allowed !important; }`;
-                    document.head.appendChild(globalCursorStyle.current);
-                }
+            if (!globalCursorStyle.current) {
+                globalCursorStyle.current = document.createElement('style');
+                globalCursorStyle.current.innerHTML = `* { cursor: not-allowed !important; }`;
+                document.head.appendChild(globalCursorStyle.current);
+            }
         } else {
             if (globalCursorStyle.current) {
                 globalCursorStyle.current.remove();
@@ -91,23 +93,23 @@ export const useDragAndDrop = ({
 
         if (panelElement && currentPanelRef.current && !currentPanelRef.current.contains(panelElement)) {
             const folderElement = targetElement?.closest('.selectable-item');
-        
+
             cursorText.current.style.display = 'block';
-        
+
             if (folderElement) {
                 // Folder type (hardcoded selectors numbering || +2 'cause of ColoredFileIcon)
                 const folderType = folderElement.querySelectorAll('span')[4]?.textContent;
                 if (folderType === 'File Folder') {
                     const folderName = folderElement.querySelectorAll('.flex span')[2]?.textContent || "Unknown Folder";
-                    cursorText.current.innerText = `Copy to ${otherPath}/${folderName}`;
+                    cursorText.current.innerText = `Move to ${otherPath}/${folderName}`;
                 } else {
-                    cursorText.current.innerText = `Copy to ${otherPath}`;
+                    cursorText.current.innerText = `Move to ${otherPath}`;
                 }
             } else {
                 // No folder element found; default text
-                cursorText.current.innerText = `Copy to ${otherPath}`;
+                cursorText.current.innerText = `Move to ${otherPath}`;
             }
-        // Over a delete
+            // Over a delete
         } else if (deleteElement) {
             cursorText.current.style.display = 'block';
             cursorText.current.innerText = `Delete selected items`;
@@ -129,10 +131,11 @@ export const useDragAndDrop = ({
         const panelElement = targetElement?.closest('[data-type="panel"]');
         const deleteElement = targetElement?.closest('[datatype="delete"]');
 
-        if (panelElement && currentPanelRef.current && !currentPanelRef.current.contains(panelElement)) {
-            console.log('Perform mutation to copy items');
-            console.log(finalPath);
-            console.log(selectedItems);
+        if (finalPath && selectedItems && selectedItems.length !== 0 && panelElement &&
+            currentPanelRef.current && !currentPanelRef.current.contains(panelElement)) {
+            // console.log(selectedItems);
+            // console.log(finalPath);
+            moveItems({ items: selectedItems, destination: finalPath });
         } else if (deleteElement) {
             setDeleteConfirmationOpen(true);
         }

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useTreeData } from '../query/treeQuery';
 import DrivesContainer from './DrivesContainer';
 import FilesContainer from './FilesContainer';
@@ -8,6 +9,7 @@ import deleteIcon from "../../media/svgs/delete.svg";
 import newFolderIcon from "../../media/svgs/new-folder.svg";
 import newFileIcon from "../../media/svgs/new-file.svg";
 import { useRefetch } from '../../context/RefetchContext';
+import { normalizePath } from '../../utils/normalizePath';
 
 interface PathProps {
     path: string | null;
@@ -23,14 +25,16 @@ interface PathProps {
 const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, setSelectedItems, panelRef, currentPanelRef }) => {
     const { refetchPaths, removePathFromRefetch } = useRefetch();
     const [prevPath, setPrevPath] = useState<string | null>(path); // in case you enter a wrong path, revert
-    const { treeData, isLoading, error, refetch } = useTreeData(path);
+
+    const panelId = useRef(uuidv4());
+    const { treeData, refetch: refetchCurrent, error, isLoading } = useTreeData(path, panelId.current);
 
     // Handle path change
     const handlePathChange = (newPath: string) => {
         currentPanelRef.current = panelRef.current;
         setPrevPath(path);
         setPath(newPath);
-        refetch();
+        refetchCurrent();
     };
 
     useEffect(() => {
@@ -40,16 +44,20 @@ const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, s
     }, [error, prevPath, setPath]);
 
     useEffect(() => {
-        if (path && refetchPaths.includes(path)) {
-            refetch().then(() => removePathFromRefetch(path));
+        if (path) {
+            let normalizedPath = normalizePath(path);
+            console.log("current norm: ", normalizedPath);
+            if (refetchPaths.includes(normalizedPath)) {
+                console.log("include current")
+                refetchCurrent().then(() => removePathFromRefetch(normalizedPath));
+            }
         }
-    }, [path, refetchPaths, refetch, removePathFromRefetch]);
+    }, [path, refetchPaths, refetchCurrent, removePathFromRefetch]);
 
     if (isLoading) {
         return <div className="flex-grow min-h-full flex items-center justify-center">Loading...</div>;
     }
 
-    // Check the `type` field to decide what to render
     const isDriveData = treeData[0]?.type === 'drive';
 
     return (

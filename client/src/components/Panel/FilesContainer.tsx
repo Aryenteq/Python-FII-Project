@@ -32,7 +32,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     selectedItems,
     setSelectedItems,
     panelRef,
-    currentPanelRef
+    currentPanelRef,
 }) => {
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false);
 

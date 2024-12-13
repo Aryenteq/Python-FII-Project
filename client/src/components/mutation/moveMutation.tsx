@@ -1,20 +1,20 @@
 import { useInfo } from "../../context/InfoContext";
 import { useMutation } from "react-query";
-import { deleteItemsRequest } from "../../fetch/deleteFetch";
+import { moveItemsRequest } from "../../fetch/moveFetch";
 import { useRefetch } from "../../context/RefetchContext";
 
-export const useDeleteItems = () => {
+export const useMoveItems = () => {
     const { setInfo } = useInfo();
     const { addPathsToRefetch } = useRefetch();
 
-    const mutation = useMutation(deleteItemsRequest, {
+    const mutation = useMutation(moveItemsRequest, {
         retry: false,
         retryDelay: 0,
         onSuccess: (data) => {
             addPathsToRefetch(data);
         },
         onError: (error: any) => {
-            const errorMessage = error.data?.error || error.message || 'An unknown error occurred while deleting items.';
+            const errorMessage = error.data?.error || error.message || 'An unknown error occurred while moving items.';
             setInfo({ message: errorMessage, isError: true });
         },
     });

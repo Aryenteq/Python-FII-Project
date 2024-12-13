@@ -216,7 +216,8 @@ def move_items(items, destination):
             return copy_status, copy_response
 
         # changed paths update
-        copied_paths = json.loads(copy_response).get("changed_paths", [])
+        # Updated part inside move_items
+        copied_paths = copy_response.get("changed_paths", [])
         changed_paths.update(copied_paths)
 
         # 2: Delete
@@ -229,8 +230,10 @@ def move_items(items, destination):
             }
 
         # Changed paths = original paths (folders containing deleted files)
-        deleted_paths = json.loads(delete_response).get("changed_paths", [])
+        deleted_paths = delete_response.get("changed_paths", [])
         changed_paths.update(deleted_paths)
+        
+        print(list(changed_paths))
 
         return 200, {
             "message": "Items moved successfully",

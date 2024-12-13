@@ -195,53 +195,52 @@ const PanelContainer: React.FC = () => {
     }, [isSelecting, dragStart, dragEnd]);
 
     return (
-        <main className="flex flex-grow min-h-0 overflow-hidden">
-            {/* Left Panel */}
-            <div
-                className="relative flex flex-grow min-h-0"
-                style={{ width: `${leftPanelWidth}%` }}
-                onMouseDown={(e) => handleMouseDown(e, "left")}
-                ref={leftPanelRef}
-            >
-                <RefetchProvider>
+        <RefetchProvider>
+            <main className="flex flex-grow min-h-0 overflow-hidden">
+                {/* Left Panel */}
+                <div
+                    className="relative flex flex-grow min-h-0"
+                    style={{ width: `${leftPanelWidth}%` }}
+                    onMouseDown={(e) => handleMouseDown(e, "left")}
+                    ref={leftPanelRef}
+                >
+
                     <Panel path={leftPath} setPath={setLeftPath} otherPath={rightPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={leftPanelRef} currentPanelRef={currentPanelRef} />
-                </RefetchProvider>
-                {isSelecting && activePanel === "left" && dragStart && dragEnd && (
-                    <div
-                        className="absolute bg-blue-500 opacity-80"
-                        style={{
-                            ...computeSelectionBox(dragStart, dragEnd, leftPanelRef.current),
-                        }}
-                    ></div>
-                )}
-            </div>
+                    {isSelecting && activePanel === "left" && dragStart && dragEnd && (
+                        <div
+                            className="absolute bg-blue-500 opacity-80"
+                            style={{
+                                ...computeSelectionBox(dragStart, dragEnd, leftPanelRef.current),
+                            }}
+                        ></div>
+                    )}
+                </div>
 
-            {/* Draggable Divider */}
-            <div
-                className="w-1 bg-gray-300 cursor-col-resize hover:bg-gray-400"
-                onMouseDown={handleDividerMouseDown}
-            />
+                {/* Draggable Divider */}
+                <div
+                    className="w-1 bg-gray-300 cursor-col-resize hover:bg-gray-400"
+                    onMouseDown={handleDividerMouseDown}
+                />
 
-            {/* Right Panel */}
-            <div
-                className="relative flex flex-grow min-h-0"
-                style={{ width: `${100 - leftPanelWidth}%` }}
-                onMouseDown={(e) => handleMouseDown(e, "right")}
-                ref={rightPanelRef}
-            >
-                <RefetchProvider>
+                {/* Right Panel */}
+                <div
+                    className="relative flex flex-grow min-h-0"
+                    style={{ width: `${100 - leftPanelWidth}%` }}
+                    onMouseDown={(e) => handleMouseDown(e, "right")}
+                    ref={rightPanelRef}
+                >
                     <Panel path={rightPath} setPath={setRightPath} otherPath={leftPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={rightPanelRef} currentPanelRef={currentPanelRef} />
-                </RefetchProvider>
-                {isSelecting && activePanel === "right" && dragStart && dragEnd && (
-                    <div
-                        className="absolute bg-blue-500 opacity-80"
-                        style={{
-                            ...computeSelectionBox(dragStart, dragEnd, rightPanelRef.current),
-                        }}
-                    ></div>
-                )}
-            </div>
-        </main>
+                    {isSelecting && activePanel === "right" && dragStart && dragEnd && (
+                        <div
+                            className="absolute bg-blue-500 opacity-80"
+                            style={{
+                                ...computeSelectionBox(dragStart, dragEnd, rightPanelRef.current),
+                            }}
+                        ></div>
+                    )}
+                </div>
+            </main>
+        </RefetchProvider>
     );
 };
 
