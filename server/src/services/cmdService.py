@@ -3,6 +3,8 @@ import os
 import shutil
 from datetime import datetime
 
+from server.src.utils.uniqueNames import get_unique_name
+
 # 
 # 
 # GET ROUTES
@@ -157,8 +159,9 @@ def copy_items(items, destination):
             if not os.path.exists(item):
                 raise FileNotFoundError(f"The item '{item}' does not exist.")
             
-            # Construct the destination path
+            # Construct the destination path (unique name - base name [plus suffix - Copy (n)])
             dest_path = os.path.join(destination, os.path.basename(item))
+            dest_path = get_unique_name(dest_path)
             
             # Copy
             if os.path.isfile(item):
@@ -209,6 +212,12 @@ def move_items(items, destination):
         
         if not isinstance(items, list) or not items:
             raise ValueError("The 'items' parameter must be a non-empty list of file paths.")
+        
+        for item in items:
+            item_path = os.path.abspath(os.path.normpath(item))
+            dest_path = os.path.join(destination, os.path.basename(item))
+            if item_path == dest_path:
+                raise ValueError(f"Cannot move '{item}' to the same location '{destination}'.")
         
         # 1: Copy
         copy_status, copy_response = copy_items(items, destination)
