@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ColoredFileIcon from './ColoredFileIcon';
 import { useDragAndDrop } from '../../hooks/DragAndDropState';
 import DeleteConfirmation from './DeleteConfirmation';
+import CreateItem from './CreateItem';
 
 interface FileOrDirectory {
     name: string;
@@ -21,6 +22,8 @@ interface FilesContainerProps {
     setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
     panelRef: React.MutableRefObject<HTMLDivElement | null>;
     currentPanelRef: React.MutableRefObject<HTMLDivElement | null>;
+    creatingItem: false | 'file' | 'folder';
+    setCreatingItem: React.Dispatch<React.SetStateAction<false | 'file' | 'folder'>>;
 }
 
 const FilesContainer: React.FC<FilesContainerProps> = ({
@@ -33,6 +36,8 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     setSelectedItems,
     panelRef,
     currentPanelRef,
+    creatingItem,
+    setCreatingItem
 }) => {
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false);
 
@@ -193,6 +198,8 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     
             {/* Table Rows */}
             <div className={`flex-grow overflow-auto custom-scrollbar pb-10 ${sortedData && sortedData.length !== 0 ? 'cursor-pointer' : ''}`} data-type="panel">
+                {creatingItem && path && <CreateItem creatingItem={creatingItem} setCreatingItem={setCreatingItem} destination={path}/>}
+                
                 {(!sortedData || sortedData.length === 0) ? (
                     <div className="text-center text-gray-500 mt-4">Folder is empty</div>
                 ) : (
@@ -217,7 +224,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                                 </span>
                                 <span className="text-left">{item.date_created}</span>
                                 <span className="text-left">{item.extension}</span>
-                                <span className="text-right">{item.size > 0 ? `${item.size} KB` : ''}</span>
+                                <span className="text-right">{item.size > 0 ? `${item.size} KB` : (item.extension !== 'File Folder' ? '0 KB' : '')}</span>
                             </div>
                         );
                     })

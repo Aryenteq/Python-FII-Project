@@ -261,6 +261,73 @@ def move_items(items, destination):
     except Exception as e:
         return 500, {"error": str(e)}
     
+
+import os
+
+def create_item(name, item_type, destination):
+    """
+    Creates a new file / folder at the given destination.
+
+    Args:
+        name (str): Given name for the new item
+        item_type (str): Either "file" or "folder"
+        destination (str): Directory where the file/folder will be placed
+
+    Returns:
+        tuple: (status_code, response_json) - Status code and changed directories
+    """
+    try:
+        destination = os.path.abspath(os.path.normpath(destination))
+        
+        if not os.path.exists(destination):
+            raise FileNotFoundError(f"The destination path '{destination}' does not exist.")
+        
+        if not os.path.isdir(destination):
+            raise ValueError(f"The destination path '{destination}' must be a directory.")
+        
+        # Full path
+        item_path = os.path.join(destination, name)
+        
+        if item_type == "file":
+            # Valid extension (extension not empty)
+            if '.' not in name or name.rsplit('.', 1)[1] == '':
+                raise ValueError(f"The file name '{name}' must include a valid extension (e.g., 'file.txt').")
+            
+            if os.path.exists(item_path):
+                raise FileExistsError(f"The file '{item_path}' already exists.")
+            
+            with open(item_path, 'w') as file:
+                file.write("")  # Empty file
+
+            return 200, {
+                "message": "File created successfully",
+                "changed_paths": [destination]
+            }
+
+        elif item_type == "folder":
+            if os.path.exists(item_path):
+                raise FileExistsError(f"The folder '{item_path}' already exists.")
+            
+            # Create the folder
+            os.makedirs(item_path)
+
+            return 200, {
+                "message": "Folder created successfully",
+                "changed_paths": [destination]
+            }
+        
+        else:
+            raise ValueError(f"Invalid item type '{item_type}'. Must be either 'file' or 'folder'.")
+    
+    except FileNotFoundError as e:
+        return 404, {"error": str(e)}
+    except ValueError as e:
+        return 400, {"error": str(e)}
+    except FileExistsError as e:
+        return 409, {"error": str(e)}
+    except Exception as e:
+        return 500, {"error": str(e)}
+    
 # 
 # 
 # DELETE ROUTES

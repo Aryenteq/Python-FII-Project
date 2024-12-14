@@ -25,6 +25,7 @@ interface PathProps {
 const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, setSelectedItems, panelRef, currentPanelRef }) => {
     const { refetchPaths, removePathFromRefetch } = useRefetch();
     const [prevPath, setPrevPath] = useState<string | null>(path); // in case you enter a wrong path, revert
+    const [creatingItem, setCreatingItem] = useState<false | 'file' | 'folder'>(false);
 
     const panelId = useRef(uuidv4());
     const { treeData, refetch: refetchCurrent, error, isLoading } = useTreeData(path, panelId.current);
@@ -73,13 +74,13 @@ const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, s
                         </button>
                         <button
                             className="w-12 h-12 hover:bg-white-10 rounded p-1 transition" title="New Folder"
-                            onClick={() => console.log('Create New Folder')}
+                            onClick={() => setCreatingItem('folder')}
                         >
                             <img src={newFolderIcon} alt="New Folder" />
                         </button>
                         <button
                             className="w-12 h-12 hover:bg-white-10 rounded p-1 transition" title="New File"
-                            onClick={() => console.log('Create New File')}
+                            onClick={() => setCreatingItem('file')}
                         >
                             <img src={newFileIcon} alt="New File" />
                         </button>
@@ -91,7 +92,9 @@ const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, s
             {isDriveData ? (
                 <DrivesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} />
             ) : (
-                <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} otherPath={otherPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={panelRef} currentPanelRef={currentPanelRef} />
+                <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath}
+                otherPath={otherPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems}
+                panelRef={panelRef} currentPanelRef={currentPanelRef} creatingItem={creatingItem} setCreatingItem={setCreatingItem}/>
             )}
         </div>
     );
