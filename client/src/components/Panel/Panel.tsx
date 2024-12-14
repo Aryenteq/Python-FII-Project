@@ -15,14 +15,12 @@ interface PathProps {
     path: string | null;
     setPath: React.Dispatch<React.SetStateAction<string | null>>;
     otherPath: string | null;
-    selectedItems: string[];
-    setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
     panelRef: React.MutableRefObject<HTMLDivElement | null>;
     currentPanelRef: React.MutableRefObject<HTMLDivElement | null>;
 }
 
 
-const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, setSelectedItems, panelRef, currentPanelRef }) => {
+const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, panelRef, currentPanelRef }) => {
     const { refetchPaths, removePathFromRefetch } = useRefetch();
     const [prevPath, setPrevPath] = useState<string | null>(path); // in case you enter a wrong path, revert
     const [creatingItem, setCreatingItem] = useState<false | 'file' | 'folder'>(false);
@@ -93,8 +91,8 @@ const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, s
                 <DrivesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath} />
             ) : (
                 <FilesContainer data={treeData} path={path} setPath={setPath} setPrevPath={setPrevPath}
-                otherPath={otherPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems}
-                panelRef={panelRef} currentPanelRef={currentPanelRef} creatingItem={creatingItem} setCreatingItem={setCreatingItem}/>
+                otherPath={otherPath} panelRef={panelRef} currentPanelRef={currentPanelRef} 
+                creatingItem={creatingItem} setCreatingItem={setCreatingItem}/>
             )}
         </div>
     );

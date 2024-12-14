@@ -10,7 +10,7 @@ interface RefetchContextProps {
 const RefetchContext = createContext<RefetchContextProps | undefined>(undefined);
 
 export const RefetchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [refetchPaths, setRefetchPaths] = useState<string[]>([]); 
+    const [refetchPaths, setRefetchPaths] = useState<string[]>([]);
 
     const addPathsToRefetch = (json: { changed_paths: string[] }) => {
         const { changed_paths } = json;

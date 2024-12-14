@@ -3,8 +3,10 @@ import ColoredFileIcon from './ColoredFileIcon';
 import { useDragAndDrop } from '../../hooks/DragAndDropState';
 import DeleteConfirmation from './DeleteConfirmation';
 import CreateItem from './CreateItem';
+import ContextMenu from './ContextMenu';
+import { useItems } from '../../context/ItemsContext';
 
-interface FileOrDirectory {
+export interface FileOrDirectory {
     name: string;
     extension: string;
     date_created: string;
@@ -18,8 +20,6 @@ interface FilesContainerProps {
     setPath: React.Dispatch<React.SetStateAction<string | null>>;
     setPrevPath: React.Dispatch<React.SetStateAction<string | null>>;
     otherPath: string | null;
-    selectedItems: string[];
-    setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
     panelRef: React.MutableRefObject<HTMLDivElement | null>;
     currentPanelRef: React.MutableRefObject<HTMLDivElement | null>;
     creatingItem: false | 'file' | 'folder';
@@ -32,13 +32,12 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     setPath,
     setPrevPath,
     otherPath,
-    selectedItems,
-    setSelectedItems,
     panelRef,
     currentPanelRef,
     creatingItem,
     setCreatingItem
 }) => {
+    const { selectedItems, setSelectedItems, cuttedItems, cuttedItemsPath } = useItems();
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false);
 
     const [sortField, setSortField] = useState<keyof FileOrDirectory>('name');
@@ -61,6 +60,26 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     });
 
     const sortedData = sortOrder === 'asc' ? [...sortedDirectories, ...sortedFiles] : [...sortedFiles, ...sortedDirectories];
+
+    // const mergedData = React.useMemo(() => {
+    //     if (path === cuttedItemsPath) {
+    //         // Filter out any cuttedItems that already exist in the sortedData
+    //         const existingItems = new Set(sortedData.map((item) => item.name));
+    //         const additionalItems = cuttedItems
+    //             .filter((itemName) => !existingItems.has(itemName))
+    //             .map((itemName) => ({
+    //                 name: itemName,
+    //                 extension: '', // Assign empty string for folders or adjust if file extensions are needed
+    //                 date_created: 'Unknown',
+    //                 size: 0,
+    //                 hidden: true, // Mark it as hidden or adjust as needed
+    //             }));
+
+    //         return [...sortedData, ...additionalItems];
+    //     }
+    //     return sortedData;
+    // }, [sortedData, cuttedItems, cuttedItemsPath, path]);
+
 
     const toggleSort = (field: keyof FileOrDirectory) => {
         setSortField(field);
@@ -122,7 +141,6 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     const { isDragging, initializeDragAndDrop } = useDragAndDrop({
         otherPath,
         currentPanelRef,
-        selectedItems,
         setDeleteConfirmationOpen
     });
 
@@ -158,8 +176,37 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
         return () => document.removeEventListener('keydown', handleKeyPress);
     }, [selectedItems]);
 
+
+    //
+    //
+    // CONTEXT MENU (right click)
+    //
+    // 
+
+    const [contextMenu, setContextMenu] = useState<{ x: number; y: number; visible: boolean; item: FileOrDirectory | null }>({
+        x: 0,
+        y: 0,
+        visible: false,
+        item: null,
+    });
+
+    const handleRightClick = (e: React.MouseEvent, item: FileOrDirectory | null) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu({ x: e.clientX, y: e.clientY, visible: true, item });
+    };
+
     return (
         <div className="flex flex-col min-h-0">
+            <ContextMenu
+                x={contextMenu.x}
+                y={contextMenu.y}
+                visible={contextMenu.visible}
+                item={contextMenu.item}
+                onClose={() => setContextMenu({ ...contextMenu, visible: false })}
+                path={path}
+                setDeleteConfirmationOpen={setDeleteConfirmationOpen}
+            />
             {/* Go Up Button */}
             <div className="flex items-center justify-between p-2">
                 <button
@@ -179,7 +226,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                     ⬆ Go Up
                 </button>
             </div>
-    
+
             {/* Table Header */}
             <div className="grid grid-cols-4 gap-2 p-2 bg-blue-900 text-white text-sm font-bold">
                 <button onClick={() => toggleSort('name')} className="text-left">
@@ -195,11 +242,13 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                     Size {sortField === 'size' && (sortOrder === 'asc' ? '▲' : '▼')}
                 </button>
             </div>
-    
+
             {/* Table Rows */}
-            <div className={`flex-grow overflow-auto custom-scrollbar pb-10 ${sortedData && sortedData.length !== 0 ? 'cursor-pointer' : ''}`} data-type="panel">
-                {creatingItem && path && <CreateItem creatingItem={creatingItem} setCreatingItem={setCreatingItem} destination={path}/>}
-                
+            <div className={`flex-grow overflow-auto custom-scrollbar pb-10`} data-type="panel"
+                onContextMenu={(e) => handleRightClick(e, null)}>
+
+                {creatingItem && path && <CreateItem creatingItem={creatingItem} setCreatingItem={setCreatingItem} destination={path} />}
+
                 {(!sortedData || sortedData.length === 0) ? (
                     <div className="text-center text-gray-500 mt-4">Folder is empty</div>
                 ) : (
@@ -208,15 +257,15 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                         return (
                             <div
                                 key={index}
-                                className={`selectable-item grid grid-cols-4 gap-2 p-2 border-b border-gray-200 hover:bg-gray-700 ${
-                                    selectedItems.includes(fullName) &&
-                                    (isDragging || panelRef.current === currentPanelRef.current)
-                                        ? 'bg-gray-600'
-                                        : ''
-                                }`}
+                                className={`selectable-item grid grid-cols-4 gap-2 p-2 border-b border-gray-200 hover:bg-gray-700 cursor-pointer
+                                    ${selectedItems.includes(fullName) &&
+                                        (isDragging || panelRef.current === currentPanelRef.current)
+                                        ? 'bg-gray-600' : (cuttedItems.includes(fullName) && cuttedItemsPath === path ? 'bg-gray-800' : '')
+                                    }`}
                                 onClick={(e) => handleClick(e, index, item)}
                                 onDoubleClick={() => handleDoubleClick(item)}
                                 onMouseDown={() => handleMouseDown(item)}
+                                onContextMenu={(e) => handleRightClick(e, item)}
                             >
                                 <span className={`flex items-center text-left ${item.hidden ? 'opacity-50' : ''}`}>
                                     <ColoredFileIcon extension={item.extension} />
@@ -230,7 +279,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                     })
                 )}
             </div>
-    
+
             {deleteConfirmationOpen && (
                 <DeleteConfirmation
                     setDeleteConfirmationOpen={setDeleteConfirmationOpen}
@@ -238,7 +287,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                 />
             )}
         </div>
-    );    
+    );
 };
 
 export default FilesContainer;

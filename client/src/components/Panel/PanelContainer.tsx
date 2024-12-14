@@ -1,20 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
 import Panel from "./Panel";
-import { RefetchProvider } from "../../context/RefetchContext";
+import { useItems } from "../../context/ItemsContext";
 
 const PanelContainer: React.FC = () => {
+    // Change panel's width (divider)
     const [leftPath, setLeftPath] = useState<string | null>(null);
     const [rightPath, setRightPath] = useState<string | null>(null);
     const [leftPanelWidth, setLeftPanelWidth] = useState<number>(50);
     const [isDraggingDivider, setIsDraggingDivider] = useState<boolean>(false);
 
-    // Drag selection logic
+    // Drag selection logic (selection box)
     const [activePanel, setActivePanel] = useState<"left" | "right" | null>(null);
     const [isSelecting, setIsSelecting] = useState(false);
     const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
     const [dragEnd, setDragEnd] = useState<{ x: number; y: number } | null>(null);
-    const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
+    // Items tracking
+    const { setSelectedItems } = useItems();
+
+    // Panels tracking
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null);
     const currentPanelRef = useRef<HTMLDivElement | null>(null);
@@ -61,8 +65,8 @@ const PanelContainer: React.FC = () => {
     //
     //
     const handleMouseDown = (e: React.MouseEvent, panel: "left" | "right") => {
-        // Ignore clicks inside dialog (delete confirmation)
-        const dialogElement = document.querySelector("#dialog");
+        // Ignore clicks inside dialog (delete confirmation | context menu)
+        const dialogElement = document.querySelector(".dialog-item");
         if (dialogElement && dialogElement.contains(e.target as Node)) {
             return; // Ignore clicks inside the dialog
         }
@@ -195,52 +199,50 @@ const PanelContainer: React.FC = () => {
     }, [isSelecting, dragStart, dragEnd]);
 
     return (
-        <RefetchProvider>
-            <main className="flex flex-grow min-h-0 overflow-hidden">
-                {/* Left Panel */}
-                <div
-                    className="relative flex flex-grow min-h-0"
-                    style={{ width: `${leftPanelWidth}%` }}
-                    onMouseDown={(e) => handleMouseDown(e, "left")}
-                    ref={leftPanelRef}
-                >
+        <main className="flex flex-grow min-h-0 overflow-hidden">
+            {/* Left Panel */}
+            <div
+                className="relative flex flex-grow min-h-0"
+                style={{ width: `${leftPanelWidth}%` }}
+                onMouseDown={(e) => handleMouseDown(e, "left")}
+                ref={leftPanelRef}
+            >
 
-                    <Panel path={leftPath} setPath={setLeftPath} otherPath={rightPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={leftPanelRef} currentPanelRef={currentPanelRef} />
-                    {isSelecting && activePanel === "left" && dragStart && dragEnd && (
-                        <div
-                            className="absolute bg-blue-500 opacity-80"
-                            style={{
-                                ...computeSelectionBox(dragStart, dragEnd, leftPanelRef.current),
-                            }}
-                        ></div>
-                    )}
-                </div>
+                <Panel path={leftPath} setPath={setLeftPath} otherPath={rightPath} panelRef={leftPanelRef} currentPanelRef={currentPanelRef} />
+                {isSelecting && activePanel === "left" && dragStart && dragEnd && (
+                    <div
+                        className="absolute bg-blue-500 opacity-80"
+                        style={{
+                            ...computeSelectionBox(dragStart, dragEnd, leftPanelRef.current),
+                        }}
+                    ></div>
+                )}
+            </div>
 
-                {/* Draggable Divider */}
-                <div
-                    className="w-1 bg-gray-300 cursor-col-resize hover:bg-gray-400"
-                    onMouseDown={handleDividerMouseDown}
-                />
+            {/* Draggable Divider */}
+            <div
+                className="w-1 bg-gray-300 cursor-col-resize hover:bg-gray-400"
+                onMouseDown={handleDividerMouseDown}
+            />
 
-                {/* Right Panel */}
-                <div
-                    className="relative flex flex-grow min-h-0"
-                    style={{ width: `${100 - leftPanelWidth}%` }}
-                    onMouseDown={(e) => handleMouseDown(e, "right")}
-                    ref={rightPanelRef}
-                >
-                    <Panel path={rightPath} setPath={setRightPath} otherPath={leftPath} selectedItems={selectedItems} setSelectedItems={setSelectedItems} panelRef={rightPanelRef} currentPanelRef={currentPanelRef} />
-                    {isSelecting && activePanel === "right" && dragStart && dragEnd && (
-                        <div
-                            className="absolute bg-blue-500 opacity-80"
-                            style={{
-                                ...computeSelectionBox(dragStart, dragEnd, rightPanelRef.current),
-                            }}
-                        ></div>
-                    )}
-                </div>
-            </main>
-        </RefetchProvider>
+            {/* Right Panel */}
+            <div
+                className="relative flex flex-grow min-h-0"
+                style={{ width: `${100 - leftPanelWidth}%` }}
+                onMouseDown={(e) => handleMouseDown(e, "right")}
+                ref={rightPanelRef}
+            >
+                <Panel path={rightPath} setPath={setRightPath} otherPath={leftPath} panelRef={rightPanelRef} currentPanelRef={currentPanelRef} />
+                {isSelecting && activePanel === "right" && dragStart && dragEnd && (
+                    <div
+                        className="absolute bg-blue-500 opacity-80"
+                        style={{
+                            ...computeSelectionBox(dragStart, dragEnd, rightPanelRef.current),
+                        }}
+                    ></div>
+                )}
+            </div>
+        </main>
     );
 };
 

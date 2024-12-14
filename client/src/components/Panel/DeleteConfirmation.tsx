@@ -27,7 +27,7 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
 
     return (
         <div
-            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[1000]" id="dialog"
+            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[1000] dialog-item"
             onClick={() => setDeleteConfirmationOpen(false)} // Close dialog on clicking outside
             role="dialog"
         >

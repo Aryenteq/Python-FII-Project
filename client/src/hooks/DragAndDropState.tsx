@@ -1,19 +1,19 @@
 import { useState, useRef } from 'react';
 import { useMoveItems } from '../components/mutation/moveMutation';
+import { useItems } from '../context/ItemsContext';
 
 interface UseDragAndDropProps {
     otherPath: string | null;
     currentPanelRef: React.MutableRefObject<HTMLDivElement | null>;
-    selectedItems: string[];
     setDeleteConfirmationOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const useDragAndDrop = ({
     otherPath,
     currentPanelRef,
-    selectedItems,
     setDeleteConfirmationOpen,
 }: UseDragAndDropProps) => {
+    const { selectedItems } = useItems();
     const [isDragging, setDragging] = useState(false);
     const isDraggingRef = useRef(false);
     const cursorEffect = useRef<HTMLDivElement | null>(null);
