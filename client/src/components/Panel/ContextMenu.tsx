@@ -12,9 +12,10 @@ interface ContextMenuProps {
     onClose: () => void;
     path: string | null;
     setDeleteConfirmationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setRenameModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, visible, onClose, item, path, setDeleteConfirmationOpen }) => {
+const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, visible, onClose, item, path, setDeleteConfirmationOpen, setRenameModalOpen }) => {
     const { selectedItems, setSelectedItems, cuttedItems, setCuttedItems, setCuttedItemsPath, copiedItems, setCopiedItems } = useItems();
     const { mutate: moveItems } = useMoveItems();
     const { mutate: copyItems } = useCopyItems();
@@ -124,7 +125,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, visible, onClose, item,
                     </button>
                     <button
                         onClick={() => {
-                            console.log('rename mutation');
+                            setRenameModalOpen(true);
                             onClose();
                         }}
                         className="block w-full px-4 py-2 text-center rounded hover:bg-blue-800"

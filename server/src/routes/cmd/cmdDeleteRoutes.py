@@ -1,4 +1,4 @@
-from server.src.controllers.cmdController import delete_items_controller
+from server.src.controllers.cmdController import *
 
 def handle_delete(path, query_params=None):
     """Routes the request to the appropriate controller."""

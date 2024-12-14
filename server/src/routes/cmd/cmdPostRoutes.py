@@ -1,4 +1,4 @@
-from server.src.controllers.cmdController import handle_copy, handle_move, handle_create
+from server.src.controllers.cmdController import *
 
 def handle_post(path, body=None):
     """Routes the request to the appropriate controller."""
@@ -9,5 +9,7 @@ def handle_post(path, body=None):
         return handle_move(body or {})
     if path == '/create':
         return handle_create(body or {})
+    if path == '/rename':
+        return handle_rename(body or {})
     
     return 404, {"error": "Not found"}

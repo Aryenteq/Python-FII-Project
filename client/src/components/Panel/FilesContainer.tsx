@@ -7,6 +7,7 @@ import ContextMenu from './ContextMenu';
 import { useItems } from '../../context/ItemsContext';
 import { useCopyItems } from '../mutation/copyMutation';
 import { useMoveItems } from '../mutation/moveMutation';
+import RenameModal from './RenameModal';
 
 export interface FileOrDirectory {
     name: string;
@@ -42,8 +43,9 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     const { selectedItems, setSelectedItems, cuttedItems, setCuttedItems, cuttedItemsPath, setCuttedItemsPath, copiedItems, setCopiedItems, showHiddenItems } = useItems();
     const { mutate: moveItems } = useMoveItems();
     const { mutate: copyItems } = useCopyItems();
-    
+
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false);
+    const [renameModalOpen, setRenameModalOpen] = useState<boolean>(false);
 
     const [sortField, setSortField] = useState<keyof FileOrDirectory>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -177,7 +179,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                 if (panelRef.current != currentPanelRef.current) {
                     return;
                 }
-    
+
                 if (cuttedItems.length > 0) {
                     moveItems({ items: copiedItems, destination: path });
                     setCopiedItems(cuttedItems);
@@ -194,10 +196,10 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                 setCopiedItems(selectedItems);
             }
         };
-    
+
         document.addEventListener('keydown', handleKeyPress);
         return () => document.removeEventListener('keydown', handleKeyPress);
-    }, [selectedItems, copiedItems, cuttedItems, path, panelRef, currentPanelRef]);    
+    }, [selectedItems, copiedItems, cuttedItems, path, panelRef, currentPanelRef]);
 
 
     //
@@ -229,6 +231,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                 onClose={() => setContextMenu({ ...contextMenu, visible: false })}
                 path={path}
                 setDeleteConfirmationOpen={setDeleteConfirmationOpen}
+                setRenameModalOpen={setRenameModalOpen}
             />
             {/* Go Up Button */}
             <div className="flex items-center justify-between p-2">
@@ -306,6 +309,13 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
             {deleteConfirmationOpen && (
                 <DeleteConfirmation
                     setDeleteConfirmationOpen={setDeleteConfirmationOpen}
+                    selectedItems={selectedItems}
+                />
+            )}
+
+            {renameModalOpen && (
+                <RenameModal
+                    setRenameModalOpen={setRenameModalOpen}
                     selectedItems={selectedItems}
                 />
             )}

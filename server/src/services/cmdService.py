@@ -328,6 +328,75 @@ def create_item(name, item_type, destination):
     except Exception as e:
         return 500, {"error": str(e)}
     
+def rename_items(items, name=None, extension=None):
+    """
+    Renames the items (files or directories) with the given name and/or extension (at least one must be provided).
+
+    Args:
+        items (list): List of paths to files or directories to be renamed
+        name (str, optional): The new name to be applied to all items
+        extension (str, optional): The new extension to be applied to files. Ignored for folders.
+
+    Returns:
+        tuple: (status_code, response_json) - Status code and changed directories
+    """
+    changed_paths = set()
+    try:
+        if not isinstance(items, list) or not items:
+            raise ValueError("The 'items' parameter must be a non-empty list of file paths.")
+        
+        for item in items:
+            item = os.path.abspath(os.path.normpath(item))
+            if not os.path.exists(item):
+                raise FileNotFoundError(f"The item '{item}' does not exist.")
+            
+            # Folder renaming
+            if os.path.isdir(item):
+                if name is None:
+                    raise ValueError("A new name must be provided for renaming folders.")
+                # Generate unique folder name
+                new_path = os.path.join(os.path.dirname(item), name)
+                new_path = get_unique_name(new_path)
+            
+            # File renaming
+            else:
+                base_name, current_ext = os.path.splitext(os.path.basename(item))
+                
+                if name is None and extension:
+                    new_name = base_name  # Keep current name
+                else:
+                    new_name = name or base_name
+                
+                # Normalize the extension to ensure it starts with a dot
+                if extension and not extension.startswith("."):
+                    extension = f".{extension}"
+                
+                # Extension
+                new_extension = extension if extension else current_ext
+                new_path = os.path.join(os.path.dirname(item), f"{new_name}{new_extension}")
+                new_path = get_unique_name(new_path)
+            
+            # Rename
+            os.rename(item, new_path)
+            changed_paths.add(os.path.dirname(new_path))
+
+        return 200, {
+            "message": "Items renamed successfully",
+            "changed_paths": list(changed_paths)
+        }
+    
+    except FileNotFoundError as e:
+        return 404, {"error": str(e)}
+    
+    except ValueError as e:
+        return 400, {"error": str(e)}
+    
+    except PermissionError as e:
+        return 403, {"error": f"Permission denied: {str(e)}"}
+    
+    except Exception as e:
+        return 500, {"error": str(e)}
+    
 # 
 # 
 # DELETE ROUTES

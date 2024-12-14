@@ -1,4 +1,4 @@
-from server.src.controllers.cmdController import handle_get_tree
+from server.src.controllers.cmdController import *
 
 def handle_get(path, query_params=None):
     """Routes the request to the appropriate controller."""

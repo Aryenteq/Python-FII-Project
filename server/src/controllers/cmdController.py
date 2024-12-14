@@ -1,4 +1,4 @@
-from server.src.services.cmdService import list_drives, list_directory_contents, copy_items, delete_items, move_items, create_item
+from server.src.services.cmdService import *
 
 # 
 # 
@@ -66,6 +66,18 @@ def handle_create(body):
         
     return status_code, changed_paths
         
+
+def handle_rename(body):
+    items = body.get("items")
+    name = body.get("name")
+    extension = body.get("extension")
+        
+    if not items or (not name and not extension):
+        return 400, {"error": "Missing required parameters: 'items' and at least one of 'name' or 'extension'"}
+        
+    status_code, changed_paths = rename_items(items, name, extension)
+        
+    return status_code, changed_paths
 
 # 
 # 
