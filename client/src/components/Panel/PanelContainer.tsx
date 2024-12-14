@@ -65,10 +65,11 @@ const PanelContainer: React.FC = () => {
     //
     //
     const handleMouseDown = (e: React.MouseEvent, panel: "left" | "right") => {
+        currentPanelRef.current = panel === "left" ? leftPanelRef.current : rightPanelRef.current;
         // Ignore clicks inside dialog (delete confirmation | context menu)
         const dialogElement = document.querySelector(".dialog-item");
         if (dialogElement && dialogElement.contains(e.target as Node)) {
-            return; // Ignore clicks inside the dialog
+            return;
         }
 
         // Blur inputs/buttons (eg. path input)
@@ -87,7 +88,7 @@ const PanelContainer: React.FC = () => {
             return;
             // Case 2: Do the selection box
         } else {
-            currentPanelRef.current = panel === "left" ? leftPanelRef.current : rightPanelRef.current;
+            // currentPanelRef.current = panel === "left" ? leftPanelRef.current : rightPanelRef.current;
             setActivePanel(panel);
             setIsSelecting(true);
             setDragStart({ x: e.clientX, y: e.clientY });

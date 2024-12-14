@@ -15,10 +15,7 @@ def get_unique_name(path):
 
     # Check for conflicts and increment the suffix
     while os.path.exists(path):
-        if counter == 1:
-            path = f"{base} - Copy{ext}"
-        else:
-            path = f"{base} - Copy ({counter}){ext}"
+        path = f"{base} - ({counter}){ext}"
         counter += 1
 
     return path

@@ -5,6 +5,8 @@ import DeleteConfirmation from './DeleteConfirmation';
 import CreateItem from './CreateItem';
 import ContextMenu from './ContextMenu';
 import { useItems } from '../../context/ItemsContext';
+import { useCopyItems } from '../mutation/copyMutation';
+import { useMoveItems } from '../mutation/moveMutation';
 
 export interface FileOrDirectory {
     name: string;
@@ -37,7 +39,10 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     creatingItem,
     setCreatingItem
 }) => {
-    const { selectedItems, setSelectedItems, cuttedItems, cuttedItemsPath } = useItems();
+    const { selectedItems, setSelectedItems, cuttedItems, setCuttedItems, cuttedItemsPath, setCuttedItemsPath, copiedItems, setCopiedItems } = useItems();
+    const { mutate: moveItems } = useMoveItems();
+    const { mutate: copyItems } = useCopyItems();
+    
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false);
 
     const [sortField, setSortField] = useState<keyof FileOrDirectory>('name');
@@ -60,26 +65,6 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     });
 
     const sortedData = sortOrder === 'asc' ? [...sortedDirectories, ...sortedFiles] : [...sortedFiles, ...sortedDirectories];
-
-    // const mergedData = React.useMemo(() => {
-    //     if (path === cuttedItemsPath) {
-    //         // Filter out any cuttedItems that already exist in the sortedData
-    //         const existingItems = new Set(sortedData.map((item) => item.name));
-    //         const additionalItems = cuttedItems
-    //             .filter((itemName) => !existingItems.has(itemName))
-    //             .map((itemName) => ({
-    //                 name: itemName,
-    //                 extension: '', // Assign empty string for folders or adjust if file extensions are needed
-    //                 date_created: 'Unknown',
-    //                 size: 0,
-    //                 hidden: true, // Mark it as hidden or adjust as needed
-    //             }));
-
-    //         return [...sortedData, ...additionalItems];
-    //     }
-    //     return sortedData;
-    // }, [sortedData, cuttedItems, cuttedItemsPath, path]);
-
 
     const toggleSort = (field: keyof FileOrDirectory) => {
         setSortField(field);
@@ -164,17 +149,53 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
         document.addEventListener("mouseup", handleQuickMouseUp);
     };
 
+    //
+    //
+    // SHORTCUTS
+    //
+    //
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
-            if (e.key === 'Delete' && selectedItems) {
+            if (e.key === 'Delete' && selectedItems.length > 0) {
+                // Delete
                 e.preventDefault();
                 setDeleteConfirmationOpen(true);
+            } else if (e.ctrlKey && e.key === 'c') {
+                // Ctrl + C
+                e.preventDefault();
+                setCopiedItems(selectedItems);
+            } else if (e.ctrlKey && e.key === 'v') {
+                // Ctrl + V
+                e.preventDefault();
+                if (!path || copiedItems.length === 0) {
+                    return;
+                }
+
+                // Paste only in the activePanel (last clicked one)
+                if (panelRef.current != currentPanelRef.current) {
+                    return;
+                }
+    
+                if (cuttedItems.length > 0) {
+                    moveItems({ items: copiedItems, destination: path });
+                    setCopiedItems(cuttedItems);
+                    setCuttedItems([]);
+                    setCuttedItemsPath(null);
+                } else {
+                    copyItems({ items: copiedItems, destination: path });
+                }
+            } else if (e.ctrlKey && e.key === 'x') {
+                // Ctrl + X
+                e.preventDefault();
+                setCuttedItems(selectedItems);
+                setCuttedItemsPath(path);
+                setCopiedItems(selectedItems);
             }
         };
-
+    
         document.addEventListener('keydown', handleKeyPress);
         return () => document.removeEventListener('keydown', handleKeyPress);
-    }, [selectedItems]);
+    }, [selectedItems, copiedItems, cuttedItems, path, panelRef, currentPanelRef]);    
 
 
     //

@@ -1,4 +1,9 @@
-export const handleOptionSelect = (selectedOption: string) => {
+import React from "react";
+
+export const handleOptionSelect = (
+    selectedOption: string,
+    setShowShortcutInfo: React.Dispatch<React.SetStateAction<boolean>>
+) => {
     switch (selectedOption) {
         case "Open":
             console.log("Open selected");
@@ -9,14 +14,8 @@ export const handleOptionSelect = (selectedOption: string) => {
         case "Close":
             console.log("Close selected");
             break;
-        case "Copy":
-            console.log("Copy selected");
-            break;
-        case "Paste":
-            console.log("Paste selected");
-            break;
-        case "Cut":
-            console.log("Cut selected");
+        case "Show":
+            setShowShortcutInfo(true); // Trigger modal
             break;
         default:
             console.log(`Action not defined for: ${selectedOption}`);
