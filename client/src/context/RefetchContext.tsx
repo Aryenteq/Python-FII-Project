@@ -10,35 +10,7 @@ interface RefetchContextProps {
 const RefetchContext = createContext<RefetchContextProps | undefined>(undefined);
 
 export const RefetchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [refetchPaths, setRefetchPaths] = useState<string[]>([]);
-    
-    // const addPathsToRefetch = (json: { changed_paths: string[] }) => {
-    //     const { changed_paths } = json;
-    
-    //     if (!changed_paths || !Array.isArray(changed_paths)) {
-    //         console.error("Invalid data: 'changed_paths' is missing or not an array.");
-    //         return;
-    //     }
-    
-    //     setRefetchPaths((prev) => {
-    //         const normalizedPaths = changed_paths.map(normalizePath);
-    //         const newPaths = normalizedPaths.filter((path) => !prev.includes(path));
-    //         return [...prev, ...newPaths];
-    //     });
-    
-    //     console.log("added: ", changed_paths);
-    // };
-    
-    // const removePathFromRefetch = (path: string | string[]) => {
-    //     setRefetchPaths((prev) => {
-    //         if (Array.isArray(path)) {
-    //             const normalizedPaths = path.map(normalizePath);
-    //             return prev.filter((p) => !normalizedPaths.includes(p));
-    //         }
-    //         return prev.filter((p) => p !== normalizePath(path));
-    //     });
-    //     console.log("Removed paths: ", Array.isArray(path) ? path : [path]);
-    // };    
+    const [refetchPaths, setRefetchPaths] = useState<string[]>([]); 
 
     const addPathsToRefetch = (json: { changed_paths: string[] }) => {
         const { changed_paths } = json;
@@ -55,21 +27,17 @@ export const RefetchProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const newPaths = normalizedPaths.filter((path) => !prev.includes(path));
             return [...prev, ...newPaths];
         });
-
-        console.log("added: ", changed_paths);
     };
 
     const removePathFromRefetch = (path: string | string[]) => {
         setRefetchPaths((prev) => {
             if (Array.isArray(path)) {
-                return prev.filter((p) => !path.includes(p)); // Remove multiple paths
+                return prev.filter((p) => !path.includes(p));
             }
-            return prev.filter((p) => p !== path); // Remove a single path
+            return prev.filter((p) => p !== path);
         });
-        console.log("Removed paths: ", Array.isArray(path) ? path : [path]);
     };    
     
-
     return (
         <RefetchContext.Provider value={{ refetchPaths, addPathsToRefetch, removePathFromRefetch }}>
             {children}

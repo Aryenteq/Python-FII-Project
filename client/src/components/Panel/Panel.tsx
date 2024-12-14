@@ -46,9 +46,7 @@ const Panel: React.FC<PathProps> = ({ path, setPath, otherPath, selectedItems, s
     useEffect(() => {
         if (path) {
             let normalizedPath = normalizePath(path);
-            console.log("current norm: ", normalizedPath);
             if (refetchPaths.includes(normalizedPath)) {
-                console.log("include current")
                 refetchCurrent().then(() => removePathFromRefetch(normalizedPath));
             }
         }

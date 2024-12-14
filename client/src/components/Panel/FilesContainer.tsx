@@ -127,7 +127,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
 
         const timeout = setTimeout(() => {
             if (!selectedItems.includes(fullName)) {
-                console.log("PROBLEMA AICI - nu se updateaza corect");
+                // console.log("PROBLEMA?");
                 setSelectedItems(() => [fullName]);
             }
             initializeDragAndDrop();
