@@ -9,8 +9,8 @@ import { RefetchProvider } from '../context/RefetchContext';
 const LandingPage: React.FC = () => {
   return (
     <div className='flex flex-col h-screen'>
-      <Header />
       <ItemsProvider>
+        <Header />
         <RefetchProvider>
           <PanelContainer />
         </RefetchProvider>

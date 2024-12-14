@@ -3,9 +3,11 @@ import OptionsList from "./OptionsList";
 import { options } from "../../utils/header/optionsConfig";
 import { handleOptionSelect } from "./optionHandler";
 import ShortcutModal from "./ShurtcutModal";
+import { useItems } from "../../context/ItemsContext";
 
 const Header: React.FC = () => {
     const [showShortcutInfo, setShowShortcutInfo] = useState(false);
+    const { setShowHiddenItems } = useItems();
 
     return (
         <>
@@ -15,7 +17,7 @@ const Header: React.FC = () => {
                         key={index}
                         option={option.name}
                         options={option.subOptions}
-                        onSelect={(selectedOption) => handleOptionSelect(selectedOption, setShowShortcutInfo)}
+                        onSelect={(selectedOption) => handleOptionSelect(selectedOption, setShowShortcutInfo, setShowHiddenItems)}
                     />
                 ))}
             </header>

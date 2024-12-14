@@ -2,17 +2,15 @@ import React from "react";
 
 export const handleOptionSelect = (
     selectedOption: string,
-    setShowShortcutInfo: React.Dispatch<React.SetStateAction<boolean>>
+    setShowShortcutInfo: React.Dispatch<React.SetStateAction<boolean>>,
+    setShowHiddenItems: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
     switch (selectedOption) {
-        case "Open":
-            console.log("Open selected");
+        case "Toggle hidden items":
+            setShowHiddenItems((prev) => !prev);
             break;
-        case "Save":
-            console.log("Save selected");
-            break;
-        case "Close":
-            console.log("Close selected");
+        case "Proof":
+            alert("Proof of concept");
             break;
         case "Show":
             setShowShortcutInfo(true); // Trigger modal

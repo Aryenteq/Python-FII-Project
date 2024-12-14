@@ -39,7 +39,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     creatingItem,
     setCreatingItem
 }) => {
-    const { selectedItems, setSelectedItems, cuttedItems, setCuttedItems, cuttedItemsPath, setCuttedItemsPath, copiedItems, setCopiedItems } = useItems();
+    const { selectedItems, setSelectedItems, cuttedItems, setCuttedItems, cuttedItemsPath, setCuttedItemsPath, copiedItems, setCopiedItems, showHiddenItems } = useItems();
     const { mutate: moveItems } = useMoveItems();
     const { mutate: copyItems } = useCopyItems();
     
@@ -49,8 +49,10 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
-    const directories = data.filter((item) => item.extension === 'File Folder');
-    const files = data.filter((item) => item.extension !== 'File Folder');
+    const filteredData = data.filter((item) => showHiddenItems || !item.hidden);
+
+    const directories = filteredData.filter((item) => item.extension === 'File Folder');
+    const files = filteredData.filter((item) => item.extension !== 'File Folder');
 
     const sortedDirectories = [...directories].sort((a, b) => {
         if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;

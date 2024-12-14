@@ -9,6 +9,8 @@ interface ItemsContextProps {
     setCuttedItemsPath: React.Dispatch<React.SetStateAction<string | null>>;
     copiedItems: string[];
     setCopiedItems: React.Dispatch<React.SetStateAction<string[]>>;
+    showHiddenItems: boolean;
+    setShowHiddenItems: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ItemsContext = createContext<ItemsContextProps | undefined>(undefined);
@@ -18,6 +20,8 @@ export const ItemsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [cuttedItems, setCuttedItems] = useState<string[]>([]);
     const [cuttedItemsPath, setCuttedItemsPath] = useState<string | null>(null);
     const [copiedItems, setCopiedItems] = useState<string[]>([]);
+
+    const [showHiddenItems, setShowHiddenItems] = useState<boolean>(false);
 
     return (
         <ItemsContext.Provider
@@ -30,6 +34,8 @@ export const ItemsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setCuttedItemsPath,
                 copiedItems,
                 setCopiedItems,
+                showHiddenItems,
+                setShowHiddenItems
             }}
         >
             {children}
