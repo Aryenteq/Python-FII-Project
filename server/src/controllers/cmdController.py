@@ -75,7 +75,12 @@ def handle_create(body):
     status_code, changed_paths = create_item(name, item_type, destination)
         
     return status_code, changed_paths
-        
+
+#
+#
+# PUT ROUTES
+#
+#
 
 def handle_rename(body):
     items = body.get("items")

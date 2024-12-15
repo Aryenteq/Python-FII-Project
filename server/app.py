@@ -2,7 +2,9 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from server.src.routes.getRoutes import handle_get
 from server.src.routes.postRoutes import handle_post
+from server.src.routes.putRoutes import handle_put
 from server.src.routes.deleteRoutes import handle_delete
+
 
 import json
 
@@ -44,6 +46,23 @@ class Server(BaseHTTPRequestHandler):
 
         # Route the request
         status_code, response = handle_post(path, body)
+        self._set_headers(status_code)
+        self.wfile.write(json.dumps(response).encode("utf-8"))
+        
+    def do_PUT(self):
+        parsed_url = urlparse(self.path)
+        path = parsed_url.path
+
+        content_length = int(self.headers.get("Content-Length", 0))
+        post_data = self.rfile.read(content_length).decode("utf-8")
+
+        try:
+            body = json.loads(post_data)
+        except json.JSONDecodeError:
+            body = {}
+
+        # Route the request
+        status_code, response = handle_put(path, body)
         self._set_headers(status_code)
         self.wfile.write(json.dumps(response).encode("utf-8"))
         

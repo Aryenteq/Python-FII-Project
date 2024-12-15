@@ -1,6 +1,6 @@
 export const renameItemsRequest = async ({items, name, extension}: {items: string[]; name: string; extension: string}): Promise<any> => {
     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/rename`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
