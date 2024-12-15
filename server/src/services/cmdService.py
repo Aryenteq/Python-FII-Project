@@ -41,6 +41,7 @@ def list_drives():
 
     return drives_info
 
+
 def is_hidden(file_path):
     if os.name == 'nt':
         import ctypes
@@ -51,6 +52,7 @@ def is_hidden(file_path):
     else:
         # unix - hidden files start with .
         return os.path.basename(file_path).startswith('.')
+
 
 def list_directory_contents(path=None):
     if path is None:
@@ -225,6 +227,7 @@ def copy_items(items, destination):
     except Exception as e:
         return 500, {"error": str(e)}
     
+    
 
 def move_items(items, destination):
     """
@@ -297,9 +300,8 @@ def move_items(items, destination):
     
     except Exception as e:
         return 500, {"error": str(e)}
-    
 
-import os
+
 
 def create_item(name, item_type, destination):
     """
@@ -364,7 +366,9 @@ def create_item(name, item_type, destination):
         return 409, {"error": str(e)}
     except Exception as e:
         return 500, {"error": str(e)}
-    
+   
+
+ 
 def rename_items(items, name=None, extension=None):
     """
     Renames the items (files or directories) with the given name and/or extension (at least one must be provided).
@@ -433,7 +437,47 @@ def rename_items(items, name=None, extension=None):
     
     except Exception as e:
         return 500, {"error": str(e)}
-    
+
+
+
+def set_file_content(file, content):
+    """
+    Args:
+        path (str): The absolute or relative path to the file.
+
+    Returns:
+        tuple: (status_code, response_json) - Status code and response details
+    """
+    try:
+        path = os.path.abspath(os.path.normpath(path))
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The file '{path}' does not exist.")
+        
+        if not os.path.isfile(path):
+            raise ValueError(f"The path '{path}' is not a file.")
+
+        # Write the content to the file
+        with open(path, 'w', encoding="utf-8", errors="ignore") as file:
+            content = file.write()
+
+        return 200, {
+            "message": "File content written successfully",
+            "content": content
+        }
+
+    except FileNotFoundError as e:
+        return 404, {"error": str(e)}
+
+    except ValueError as e:
+        return 400, {"error": str(e)}
+
+    except PermissionError as e:
+        return 403, {"error": f"Permission denied: {str(e)}"}
+
+    except Exception as e:
+        return 500, {"error": str(e)}
+
+
 # 
 # 
 # DELETE ROUTES

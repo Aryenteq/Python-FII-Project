@@ -94,6 +94,17 @@ def handle_rename(body):
         
     return status_code, changed_paths
 
+def handle_set_file_content(body):
+    file = body.get("file")
+    content = body.get("content")
+        
+    if not file or content:
+        return 400, {"error": "Missing required parameters: 'file' or 'content"}
+        
+    status_code, response = set_file_content(file, content)
+        
+    return status_code, response
+
 # 
 # 
 # DELETE ROUTES

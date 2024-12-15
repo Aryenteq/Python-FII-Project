@@ -17,7 +17,7 @@ const EditFile: React.FC<EditFileProps> = ({ editingFile, setEditingFile }) => {
     }, [fileContent]);
 
     const handleSave = () => {
-        // saveFileContent({ filePath: editingFile, content });
+        // saveFileContent({ file: editingFile, content });
     };
 
     const handleCancel = () => {

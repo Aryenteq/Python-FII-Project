@@ -5,5 +5,7 @@ def handle_put(path, body=None):
     
     if path == '/rename':
         return handle_rename(body or {})
+    if path == '/file-content':
+        return handle_set_file_content(body or {})
     
     return 404, {"error": "Not found"}
