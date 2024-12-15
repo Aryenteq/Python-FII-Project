@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import { useInfo } from "../../context/InfoContext";
-import { fetchFileContent } from "../../fetch/fileContentFetch";
+import { fetchFileContent } from "../../fetch/getFileContentFetch";
 
 export const useFileContent = (path: string | null) => {
     const { setInfo } = useInfo();

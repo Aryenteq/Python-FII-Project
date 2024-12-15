@@ -281,8 +281,6 @@ def move_items(items, destination):
         # Changed paths = original paths (folders containing deleted files)
         deleted_paths = delete_response.get("changed_paths", [])
         changed_paths.update(deleted_paths)
-        
-        print(list(changed_paths))
 
         return 200, {
             "message": "Items moved successfully",
@@ -449,7 +447,7 @@ def set_file_content(file, content):
         tuple: (status_code, response_json) - Status code and response details
     """
     try:
-        path = os.path.abspath(os.path.normpath(path))
+        path = os.path.abspath(os.path.normpath(file))
         if not os.path.exists(path):
             raise FileNotFoundError(f"The file '{path}' does not exist.")
         
@@ -458,7 +456,7 @@ def set_file_content(file, content):
 
         # Write the content to the file
         with open(path, 'w', encoding="utf-8", errors="ignore") as file:
-            content = file.write()
+            file.write(content)
 
         return 200, {
             "message": "File content written successfully",

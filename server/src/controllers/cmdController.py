@@ -98,7 +98,7 @@ def handle_set_file_content(body):
     file = body.get("file")
     content = body.get("content")
         
-    if not file or content:
+    if not file or not content:
         return 400, {"error": "Missing required parameters: 'file' or 'content"}
         
     status_code, response = set_file_content(file, content)

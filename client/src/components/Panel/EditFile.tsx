@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useFileContent } from '../query/fileContentQuery';
+import { useSetFileContent } from '../mutation/fileContentMutation';
 
 interface EditFileProps {
     editingFile: string | null;
@@ -7,6 +8,8 @@ interface EditFileProps {
 }
 
 const EditFile: React.FC<EditFileProps> = ({ editingFile, setEditingFile }) => {
+    const { mutate: setFileContent } = useSetFileContent();
+    
     const { fileContent, error, isLoading } = useFileContent(editingFile);
     const [content, setContent] = useState<string>('');
 
@@ -17,7 +20,8 @@ const EditFile: React.FC<EditFileProps> = ({ editingFile, setEditingFile }) => {
     }, [fileContent]);
 
     const handleSave = () => {
-        // saveFileContent({ file: editingFile, content });
+        setFileContent({ file: editingFile!, content });
+        setEditingFile(null);
     };
 
     const handleCancel = () => {
@@ -27,8 +31,7 @@ const EditFile: React.FC<EditFileProps> = ({ editingFile, setEditingFile }) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.ctrlKey && e.key === 's') {
             e.preventDefault();
-            handleSave();
-            setEditingFile(null);
+            setFileContent({ file: editingFile!, content });
         } else if (e.key === 'Escape') {
             e.preventDefault();
             handleCancel();
