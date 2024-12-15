@@ -8,6 +8,7 @@ import { useItems } from '../../context/ItemsContext';
 import { useCopyItems } from '../mutation/copyMutation';
 import { useMoveItems } from '../mutation/moveMutation';
 import RenameModal from './RenameModal';
+import EditFile from './EditFile';
 
 export interface FileOrDirectory {
     name: string;
@@ -44,6 +45,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
     const { mutate: moveItems } = useMoveItems();
     const { mutate: copyItems } = useCopyItems();
 
+    const [editingFile, setEditingFile] = useState<string | null>(null);
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false);
     const [renameModalOpen, setRenameModalOpen] = useState<boolean>(false);
 
@@ -123,6 +125,8 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
         if (item.extension === 'File Folder') {
             setPrevPath(path);
             setPath(path ? `${path}/${item.name}` : item.name);
+        } if (item.extension === '.txt') {
+            setEditingFile(getFullName(item));
         }
     };
 
@@ -299,7 +303,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                                 </span>
                                 <span className="text-left">{item.date_created}</span>
                                 <span className="text-left">{item.extension}</span>
-                                <span className="text-right">{item.size > 0 ? `${item.size} KB` : (item.extension !== 'File Folder' ? '0 KB' : '')}</span>
+                                <span className="text-right">{item.extension !== 'File Folder' ? `${item.size} KB` : ''}</span>
                             </div>
                         );
                     })
@@ -317,6 +321,13 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
                 <RenameModal
                     setRenameModalOpen={setRenameModalOpen}
                     selectedItems={selectedItems}
+                />
+            )}
+
+            {editingFile && (
+                <EditFile
+                    editingFile={editingFile}
+                    setEditingFile={setEditingFile}
                 />
             )}
         </div>

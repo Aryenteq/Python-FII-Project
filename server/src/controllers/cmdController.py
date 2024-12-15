@@ -18,6 +18,16 @@ def handle_get_tree(query_params):
     return status_code, directory_structure
 
 
+def handle_get_file_content(query_params):
+    path = query_params.get("path", [None])[0]
+    
+    if not path:
+        return 400, {"error": "Missing required parameter: 'path'"}
+
+    status_code, file_data = get_file_content(path)
+    
+    return status_code, file_data
+
 
 # 
 # 

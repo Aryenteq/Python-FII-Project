@@ -133,8 +133,6 @@ export const useDragAndDrop = ({
 
         if (finalPath && selectedItems && selectedItems.length !== 0 && panelElement &&
             currentPanelRef.current && !currentPanelRef.current.contains(panelElement)) {
-            // console.log(selectedItems);
-            // console.log(finalPath);
             moveItems({ items: selectedItems, destination: finalPath });
         } else if (deleteElement) {
             setDeleteConfirmationOpen(true);

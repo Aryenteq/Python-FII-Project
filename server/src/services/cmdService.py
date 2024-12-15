@@ -124,6 +124,43 @@ def list_directory_contents(path=None):
         return 500, {"error": str(e)}
 
     
+    
+def get_file_content(path):
+    """
+    Args:
+        path (str): The absolute or relative path to the file.
+
+    Returns:
+        tuple: (status_code, response_json) - Status code and response details
+    """
+    try:
+        path = os.path.abspath(os.path.normpath(path))
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The file '{path}' does not exist.")
+        
+        if not os.path.isfile(path):
+            raise ValueError(f"The path '{path}' is not a file.")
+
+        # Read the content of the file
+        with open(path, 'r', encoding="utf-8", errors="ignore") as file:
+            content = file.read()
+
+        return 200, {
+            "message": "File content retrieved successfully",
+            "content": content
+        }
+
+    except FileNotFoundError as e:
+        return 404, {"error": str(e)}
+
+    except ValueError as e:
+        return 400, {"error": str(e)}
+
+    except PermissionError as e:
+        return 403, {"error": f"Permission denied: {str(e)}"}
+
+    except Exception as e:
+        return 500, {"error": str(e)}
 
 # 
 # 
