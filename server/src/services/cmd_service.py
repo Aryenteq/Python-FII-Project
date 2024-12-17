@@ -55,6 +55,15 @@ def is_hidden(file_path):
 
 
 def list_directory_contents(path=None):
+    """
+    Get the content of given path. If path is none, get the drives. Otherwise, the content in the path (non-recursive)
+    
+    Args:
+        path (string or None): absolute or relative path
+        
+    Returns:
+        tuple: (status_code, structure) - Status code and content
+    """
     if path is None:
         return 200, list_drives()
 
@@ -133,7 +142,7 @@ def get_file_content(path):
         path (str): The absolute or relative path to the file.
 
     Returns:
-        tuple: (status_code, response_json) - Status code and response details
+        tuple: (status_code, response_json) - Status code and the content of the file
     """
     try:
         path = os.path.abspath(os.path.normpath(path))
@@ -175,11 +184,11 @@ def copy_items(items, destination):
     Copies the specified items (files or directories) to a destination directory.
     
     Args:
-        items (list): List of paths to files or directories to be copied.
-        destination (str): The destination directory.
+        items (list): List of paths to files or directories to be copied
+        destination (str): The destination directory
         
     Returns:
-        tuple: (status_code, response_json) - Status code and response details in JSON format.
+        tuple: (status_code, changed_paths) - Status code and and changed directories
     """
     changed_paths = set()
     try:
@@ -234,11 +243,11 @@ def move_items(items, destination):
     Moves the specified items (files or directories) to the destination.
 
     Args:
-        items (list): List of paths to files or directories to be moved.
-        destination (str): The destination directory.
+        items (list): List of paths to files or directories to be moved
+        destination (str): The destination directory
 
     Returns:
-        tuple: (status_code, response_json) - Status code and response details in JSON format.
+        tuple: (status_code, changed_paths) - Status code and and changed directories
     """
     changed_paths = set()
     try:
@@ -311,7 +320,7 @@ def create_item(name, item_type, destination):
         destination (str): Directory where the file/folder will be placed
 
     Returns:
-        tuple: (status_code, response_json) - Status code and changed directories
+        tuple: (status_code, changed_paths) - Status code and changed directories
     """
     try:
         destination = os.path.abspath(os.path.normpath(destination))
@@ -377,7 +386,7 @@ def rename_items(items, name=None, extension=None):
         extension (str, optional): The new extension to be applied to files. Ignored for folders.
 
     Returns:
-        tuple: (status_code, response_json) - Status code and changed directories
+        tuple: (status_code, changed_paths) - Status code and changed directories
     """
     changed_paths = set()
     try:
@@ -444,7 +453,7 @@ def set_file_content(file, content):
         path (str): The absolute or relative path to the file.
 
     Returns:
-        tuple: (status_code, response_json) - Status code and response details
+        tuple: (status_code, changed_paths) - Status code and new content
     """
     try:
         path = os.path.abspath(os.path.normpath(file))
@@ -487,10 +496,10 @@ def delete_items(items):
     Deletes the specified items (files or directories).
     
     Args:
-        items (list): List of paths to files or directories to be deleted.
+        items (list): List of paths to files or directories to be deleted
         
     Returns:
-        tuple: (status_code, response_dict) - Status code and response details.
+        tuple: (status_code, changed_paths) - Status code and changed directories
     """
     changed_paths = set()
     try:

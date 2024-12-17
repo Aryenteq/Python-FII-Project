@@ -186,7 +186,7 @@ const FilesContainer: React.FC<FilesContainerProps> = ({
 
                 if (cuttedItems.length > 0) {
                     moveItems({ items: copiedItems, destination: path });
-                    setCopiedItems(cuttedItems);
+                    // setCopiedItems(cuttedItems);
                     setCuttedItems([]);
                     setCuttedItemsPath(null);
                 } else {

@@ -64,7 +64,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, visible, onClose, item,
     
                         if (cuttedItems.length !== 0) {
                             moveItems({ items: copiedItems, destination: path });
-                            setCopiedItems(cuttedItems);
+                            // setCopiedItems(cuttedItems);
                             setCuttedItems([]);
                             setCuttedItemsPath(null);
                         } else {
@@ -108,7 +108,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, visible, onClose, item,
     
                             if (cuttedItems.length !== 0) {
                                 moveItems({ items: copiedItems, destination: path });
-                                setCopiedItems(cuttedItems);
+                                // setCopiedItems(cuttedItems);
                                 setCuttedItems([]);
                                 setCuttedItemsPath(null);
                             } else {
