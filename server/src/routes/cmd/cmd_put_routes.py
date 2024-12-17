@@ -1,4 +1,4 @@
-from server.src.controllers.cmdController import *
+from server.src.controllers.cmd_controller import *
 
 def handle_put(path, body=None):
     """Routes the request to the appropriate controller."""

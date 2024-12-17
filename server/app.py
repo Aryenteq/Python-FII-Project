@@ -1,14 +1,17 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-from server.src.routes.getRoutes import handle_get
-from server.src.routes.postRoutes import handle_post
-from server.src.routes.putRoutes import handle_put
-from server.src.routes.deleteRoutes import handle_delete
+from server.src.routes.get_routes import handle_get
+from server.src.routes.post_routes import handle_post
+from server.src.routes.put_routes import handle_put
+from server.src.routes.delete_routes import handle_delete
 
 
 import json
 
 class Server(BaseHTTPRequestHandler):
+    """
+    Server configuration (set headers, handle requests)
+    """
     def _set_headers(self, status_code=200, content_type="application/json"):
         self.send_response(status_code)
         self.send_header("Content-Type", content_type)
@@ -77,10 +80,3 @@ class Server(BaseHTTPRequestHandler):
         status_code, response = handle_delete(path, query_params)
         self._set_headers(status_code)
         self.wfile.write(json.dumps(response).encode("utf-8"))
-        
-
-if __name__ == "__main__":
-    server_address = ("127.0.0.1", 8000)
-    httpd = HTTPServer(server_address, Server)
-    print("Starting server on http://127.0.0.1:8000")
-    httpd.serve_forever()

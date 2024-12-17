@@ -1,10 +1,12 @@
 from importlib import import_module, reload
 
 SEARCH_MODULES = [
-    "server.src.routes.cmd.cmdPutRoutes",
+    "server.src.routes.cmd.cmd_post_routes",
 ]
 
-def handle_put(path, body=None):
+def handle_post(path, body=None):
+    """Routes the request to the appropriate module."""
+    
     body = body or {}
 
     for module_name in SEARCH_MODULES:
@@ -12,8 +14,8 @@ def handle_put(path, body=None):
             module = import_module(module_name)
             reload(module)
             
-            if hasattr(module, "handle_put"):
-                status, response = module.handle_put(path, body)
+            if hasattr(module, "handle_post"):
+                status, response = module.handle_post(path, body)
                 
                 if status != 404:
                     return status, response

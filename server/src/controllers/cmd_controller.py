@@ -1,4 +1,4 @@
-from server.src.services.cmdService import *
+from server.src.services.cmd_service import *
 
 # 
 # 

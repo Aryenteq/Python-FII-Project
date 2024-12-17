@@ -10,7 +10,10 @@ import shutil
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 class ChangeHandler(FileSystemEventHandler):
-    """Restart the server on file changes."""
+    """
+    Detects changes to a file and calls a restart_callback
+    Ignores changes to pycache and has a cooldown of 1 second between refreshes
+    """
     def __init__(self, restart_callback):
         self.restart_callback = restart_callback
         self._debounce_time = 1  # seconds
@@ -32,6 +35,9 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 def clear_and_reload_modules(base_path, prefix="server"):
+    """
+    Deletes app, all __pycache__ folders, modules from current directory and refreshes
+    """
     global app  # Explicitly clear global app reference
     app = None
 
@@ -44,7 +50,8 @@ def clear_and_reload_modules(base_path, prefix="server"):
                 pycache_path = os.path.join(root, dir_name)
                 # print(f"Deleting __pycache__: {pycache_path}")
                 shutil.rmtree(pycache_path, ignore_errors=True)
-
+                
+    # Reload modules from current directory (removing __pycache__ is not enough)
     modules_to_clear = [
         module_name
         for module_name, module in sys.modules.items()
@@ -69,12 +76,14 @@ def clear_and_reload_modules(base_path, prefix="server"):
 
 
 class ServerManager:
+    """
+    Init / start (in a separate thread) / stop the HTTP server from app.py
+    """
     def __init__(self):
         self.httpd = None
         self.server_thread = None
 
     def start_server(self):
-        """Start the HTTP server in a separate thread."""
         if self.server_thread and self.server_thread.is_alive():
             self.stop_server()
 
@@ -98,7 +107,6 @@ class ServerManager:
         self.server_thread.start()
 
     def stop_server(self):
-        """Stop the HTTP server."""
         if self.httpd:
             print("Stopping server...")
             self.httpd.shutdown()
@@ -107,12 +115,16 @@ class ServerManager:
 
 
 def main():
+    """
+    On first run, restart the server (even tho it is closed the first time)
+    Restart everyt time a change is made to a file
+    """
     manager = ServerManager()
 
     def restart():
         print("Restarting server...")
         manager.stop_server()
-        time.sleep(0.5)
+        time.sleep(0.5) # Time to close and release all used resources
         manager.start_server()
 
     restart()
@@ -125,7 +137,7 @@ def main():
 
     try:
         while True:
-            time.sleep(1)
+            time.sleep(1) # Check for changes 1 time per second
     except KeyboardInterrupt:
         print("\nShutting down...")
     finally:
